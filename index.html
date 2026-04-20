@@ -313,6 +313,18 @@
       border-color: rgba(244,114,182,0.65);
     }
 
+    button.ghost {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    button.ghost:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.85);
+    }
+
     .preset-label {
       font-size: clamp(0.65rem, 0.9vw, 0.8rem);
       text-transform: uppercase;
@@ -410,6 +422,7 @@
       <span style="opacity:0.5">:</span>
       <select id="minuteInput" aria-label="Minute"></select>
       <button class="primary" id="setBtn">Set</button>
+      <button class="ghost" id="resetBtn" title="Clear target and title">Reset</button>
     </div>
     <p class="preset-label">Adjust target</p>
     <div class="preset-row">
@@ -650,6 +663,16 @@
     $('setBtn').addEventListener('click', () => {
       const ms = readInputsToMs();
       if (ms != null) setTarget(ms);
+    });
+
+    $('resetBtn').addEventListener('click', () => {
+      targetMs = null;
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+      $('title').textContent = 'Meeting';
+      writeMsToInputs(Date.now());
+      updateMeta();
+      if (rafId) cancelAnimationFrame(rafId);
+      render();
     });
 
     $('title').addEventListener('input', () => {
