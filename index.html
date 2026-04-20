@@ -667,8 +667,7 @@
 
     $('resetBtn').addEventListener('click', () => {
       targetMs = null;
-      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
-      $('title').textContent = 'Meeting';
+      saveState();
       writeMsToInputs(Date.now());
       updateMeta();
       if (rafId) cancelAnimationFrame(rafId);
