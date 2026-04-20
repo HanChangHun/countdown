@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#302b63"/>
+      <stop offset="1" stop-color="#0f0c29"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f7797d"/>
+      <stop offset="1" stop-color="#FBD786"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- top button and stem -->
+  <rect x="27" y="9" width="10" height="5" rx="1.6" fill="url(#warm)"/>
+  <rect x="30" y="13" width="4" height="4" fill="url(#warm)"/>
+  <!-- stopwatch body -->
+  <circle cx="32" cy="37" r="17" fill="none" stroke="url(#warm)" stroke-width="3.2"/>
+  <!-- clock hand to 12 -->
+  <line x1="32" y1="37" x2="32" y2="27" stroke="url(#warm)" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- clock hand to ~4 -->
+  <line x1="32" y1="37" x2="39.4" y2="40.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" opacity="0.78"/>
+  <!-- center pivot -->
+  <circle cx="32" cy="37" r="1.9" fill="#ffffff"/>
+</svg>
