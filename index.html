@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1545">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Meeting Countdown</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1a1545;
+      color: #fff;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .bg {
+      position: fixed;
+      top: -50px;
+      left: -50px;
+      right: -50px;
+      bottom: -50px;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      z-index: -2;
+    }
+
+    .container {
+      text-align: center;
+      padding: clamp(1.5rem, 3vw, 3rem);
+      max-width: min(80vw, 820px);
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: clamp(5px, 0.8vh, 10px) clamp(14px, 2vw, 24px);
+      font-size: clamp(0.7rem, 1vw, 1rem);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: clamp(0.8rem, 2vh, 1.8rem);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 3.6vw, 3.6rem);
+      font-weight: 700;
+      margin-bottom: clamp(0.2rem, 0.5vh, 0.5rem);
+      background: linear-gradient(to right, #f7797d, #FBD786, #C6FFDD);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      outline: none;
+      cursor: text;
+      padding: 0 0.25em;
+      border-radius: 8px;
+      transition: background-color 0.2s;
+    }
+
+    h1:hover { background-color: rgba(255,255,255,0.04); }
+    h1:focus { background-color: rgba(255,255,255,0.08); }
+
+    .subtitle {
+      font-size: clamp(0.85rem, 1.5vw, 1.3rem);
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: clamp(0.8rem, 2vh, 1.8rem);
+    }
+
+    .deadline-info {
+      font-size: clamp(0.8rem, 1.2vw, 1.1rem);
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: clamp(0.5rem, 1vh, 0.8rem);
+    }
+
+    .now-info {
+      font-size: clamp(0.75rem, 1.1vw, 1rem);
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: clamp(1rem, 2.5vh, 2rem);
+    }
+
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: clamp(0.6rem, 1.5vw, 1.5rem);
+      margin-bottom: clamp(1rem, 2vh, 2rem);
+      flex-wrap: wrap;
+    }
+
+    .unit {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: clamp(10px, 1.2vw, 18px);
+      padding: clamp(0.8rem, 2vh, 2rem) 0;
+      width: clamp(70px, 11vw, 140px);
+      backdrop-filter: blur(20px);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .unit:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(247, 121, 125, 0.2);
+    }
+
+    .unit .number {
+      font-size: clamp(1.6rem, 3.5vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.7));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .unit .label {
+      font-size: clamp(0.55rem, 0.9vw, 0.85rem);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: clamp(0.3rem, 0.6vh, 0.6rem);
+    }
+
+    .expired {
+      font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+      color: #f7797d;
+      animation: pulse 1.5s infinite;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(0.4rem, 1vw, 0.8rem);
+      flex-wrap: wrap;
+      margin-top: clamp(0.8rem, 2vh, 1.6rem);
+    }
+
+    input[type="datetime-local"], button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      border-radius: 10px;
+      padding: clamp(0.5rem, 1vh, 0.7rem) clamp(0.8rem, 1.5vw, 1.2rem);
+      font-size: clamp(0.8rem, 1.1vw, 1rem);
+      font-family: inherit;
+      backdrop-filter: blur(10px);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    input[type="datetime-local"] {
+      color-scheme: dark;
+      min-width: 220px;
+    }
+
+    input[type="datetime-local"]:hover,
+    input[type="datetime-local"]:focus,
+    button:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.35);
+      outline: none;
+    }
+
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, rgba(247,121,125,0.35), rgba(251,215,134,0.25));
+      border-color: rgba(251,215,134,0.4);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, rgba(247,121,125,0.5), rgba(251,215,134,0.4));
+    }
+
+    .preset-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    .preset-row button {
+      padding: 0.35rem 0.8rem;
+      font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+      border-radius: 14px;
+    }
+
+    .particles {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .container { max-width: 100%; }
+      html, body { overflow: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+    <div class="badge" id="badge">Meeting Countdown</div>
+    <h1 id="title" contenteditable="true" spellcheck="false">My Meeting</h1>
+    <p class="subtitle" id="subtitle">Time remaining until the target</p>
+    <p class="deadline-info" id="deadlineInfo">Target: --</p>
+    <p class="now-info" id="nowInfo">Now: --</p>
+
+    <div class="countdown" id="countdown">
+      <div class="unit">
+        <div class="number" id="days">--</div>
+        <div class="label">Days</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="hours">--</div>
+        <div class="label">Hours</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="minutes">--</div>
+        <div class="label">Min</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="seconds">--</div>
+        <div class="label">Sec</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="datetime-local" id="targetInput" step="60">
+      <button class="primary" id="setBtn">Set</button>
+      <button id="copyBtn" title="Copy shareable link">Copy Link</button>
+    </div>
+    <div class="preset-row">
+      <button data-preset="15">+15 min</button>
+      <button data-preset="30">+30 min</button>
+      <button data-preset="60">+1 hour</button>
+      <button data-preset="180">+3 hours</button>
+      <button data-preset="1440">+1 day</button>
+      <button data-preset="10080">+1 week</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'ch-countdown:v1';
+    const DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    let targetMs = null;
+    let rafId = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function fmtDateTime(d) {
+      const y = d.getFullYear();
+      const m = d.getMonth() + 1;
+      const day = d.getDate();
+      const wd = DAYS_EN[d.getDay()];
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      return `${y}. ${m}. ${day}. (${wd}) ${hh}:${mm}`;
+    }
+
+    function toLocalInputValue(ms) {
+      const d = new Date(ms);
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      return `${y}-${m}-${day}T${hh}:${mm}`;
+    }
+
+    function fromLocalInputValue(v) {
+      if (!v) return null;
+      const t = new Date(v).getTime();
+      return Number.isFinite(t) ? t : null;
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          target: targetMs,
+          title: $('title').textContent.trim() || 'My Meeting',
+        }));
+      } catch (e) { /* ignore */ }
+    }
+
+    function loadState() {
+      const url = new URL(window.location.href);
+      const qTarget = url.searchParams.get('t');
+      const qTitle = url.searchParams.get('title');
+      if (qTarget) {
+        const t = Number(qTarget);
+        if (Number.isFinite(t)) targetMs = t;
+      }
+      if (qTitle) $('title').textContent = qTitle;
+
+      if (targetMs == null) {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const s = JSON.parse(raw);
+            if (Number.isFinite(s.target)) targetMs = s.target;
+            if (s.title) $('title').textContent = s.title;
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      if (targetMs == null) targetMs = Date.now();
+    }
+
+    function setTarget(ms, { sync = true } = {}) {
+      targetMs = ms;
+      $('targetInput').value = toLocalInputValue(ms);
+      $('deadlineInfo').textContent = `Target: ${fmtDateTime(new Date(ms))}`;
+      if (sync) saveState();
+      startLoop();
+    }
+
+    function updateNow() {
+      $('nowInfo').textContent = `Now: ${fmtDateTime(new Date())}`;
+    }
+
+    function render() {
+      const diff = targetMs - Date.now();
+      const cd = $('countdown');
+
+      if (diff <= 0) {
+        if (!cd.dataset.expired) {
+          cd.dataset.expired = '1';
+          cd.innerHTML = '<p class="expired">TIME\'S UP!</p>';
+        }
+        return;
+      }
+
+      if (cd.dataset.expired) {
+        delete cd.dataset.expired;
+        cd.innerHTML = `
+          <div class="unit"><div class="number" id="days">--</div><div class="label">Days</div></div>
+          <div class="unit"><div class="number" id="hours">--</div><div class="label">Hours</div></div>
+          <div class="unit"><div class="number" id="minutes">--</div><div class="label">Min</div></div>
+          <div class="unit"><div class="number" id="seconds">--</div><div class="label">Sec</div></div>`;
+      }
+
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+
+      $('days').textContent = pad(days);
+      $('hours').textContent = pad(hours);
+      $('minutes').textContent = pad(minutes);
+      $('seconds').textContent = pad(seconds);
+
+      rafId = requestAnimationFrame(render);
+    }
+
+    function startLoop() {
+      if (rafId) cancelAnimationFrame(rafId);
+      const cd = $('countdown');
+      delete cd.dataset.expired;
+      render();
+    }
+
+    // Event wiring
+    $('setBtn').addEventListener('click', () => {
+      const ms = fromLocalInputValue($('targetInput').value);
+      if (ms != null) setTarget(ms);
+    });
+
+    $('targetInput').addEventListener('change', () => {
+      const ms = fromLocalInputValue($('targetInput').value);
+      if (ms != null) setTarget(ms);
+    });
+
+    $('title').addEventListener('input', saveState);
+    $('title').addEventListener('blur', () => {
+      if (!$('title').textContent.trim()) $('title').textContent = 'My Meeting';
+      saveState();
+    });
+    $('title').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); $('title').blur(); }
+    });
+
+    document.querySelectorAll('[data-preset]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const mins = Number(btn.dataset.preset);
+        setTarget(Date.now() + mins * 60000);
+      });
+    });
+
+    $('copyBtn').addEventListener('click', async () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('t', String(targetMs));
+      url.searchParams.set('title', $('title').textContent.trim() || 'My Meeting');
+      const link = url.toString();
+      try {
+        await navigator.clipboard.writeText(link);
+        const original = $('copyBtn').textContent;
+        $('copyBtn').textContent = 'Copied!';
+        setTimeout(() => { $('copyBtn').textContent = original; }, 1500);
+      } catch (e) {
+        window.prompt('Copy this link:', link);
+      }
+    });
+
+    // Particles
+    (function createParticles() {
+      const container = $('particles');
+      for (let i = 0; i < 40; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (6 + Math.random() * 10) + 's';
+        p.style.animationDelay = -(Math.random() * 16) + 's';
+        p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+        container.appendChild(p);
+      }
+    })();
+
+    // Init
+    loadState();
+    setTarget(targetMs, { sync: false });
+    updateNow();
+    setInterval(updateNow, 1000 * 30);
+  </script>
+</body>
+</html>
