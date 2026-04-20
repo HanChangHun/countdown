@@ -68,6 +68,8 @@
     }
 
     h1 {
+      position: relative;
+      display: inline-block;
       font-size: clamp(2rem, 4vw, 4rem);
       font-weight: 700;
       margin-bottom: clamp(0.4rem, 1vh, 0.8rem);
@@ -77,13 +79,48 @@
       background-clip: text;
       outline: none;
       cursor: text;
-      padding: 0 0.25em;
-      border-radius: 8px;
+      padding: 0.05em 0.35em;
+      border-radius: 10px;
+      min-height: 1.2em;
+      min-width: 4ch;
       transition: background-color 0.2s;
     }
 
-    h1:hover { background-color: rgba(255,255,255,0.04); }
-    h1:focus { background-color: rgba(255,255,255,0.08); }
+    h1:hover { background-color: rgba(255,255,255,0.05); }
+    h1:focus { background-color: rgba(255,255,255,0.09); }
+
+    h1::after {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: 0.05em;
+      height: 1px;
+      background: linear-gradient(to right,
+        transparent,
+        rgba(255, 255, 255, 0.45),
+        transparent);
+      opacity: 0;
+      transform: scaleX(0.4);
+      transform-origin: center;
+      transition: opacity 0.25s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    h1:hover::after { opacity: 1; transform: scaleX(1); }
+    h1:focus::after { opacity: 0; }
+
+    h1:empty::before {
+      content: attr(data-placeholder);
+      -webkit-text-fill-color: rgba(255, 255, 255, 0.32);
+      color: rgba(255, 255, 255, 0.32);
+      background: none;
+      font-weight: 500;
+      font-style: italic;
+      letter-spacing: -0.3px;
+    }
+
+    h1:focus:empty::before { opacity: 0.6; }
 
     .meta-target {
       font-size: clamp(0.9rem, 1.25vw, 1.15rem);
@@ -331,7 +368,7 @@
 
   <div class="container">
     <div class="badge" id="badge">UPCOMING</div>
-    <h1 id="title" contenteditable="true" spellcheck="false">My Meeting</h1>
+    <h1 id="title" contenteditable="true" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Countdown</h1>
     <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
     <p class="meta-now"><span class="meta-label">Now</span><span id="metaNow">--</span></p>
 
@@ -462,7 +499,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           target: targetMs,
-          title: $('title').textContent.trim() || 'My Meeting',
+          title: $('title').textContent.trim(),
         }));
       } catch (e) { /* ignore */ }
     }
@@ -602,11 +639,13 @@
       if (ms != null) setTarget(ms);
     });
 
-    $('title').addEventListener('input', saveState);
-    $('title').addEventListener('blur', () => {
-      if (!$('title').textContent.trim()) $('title').textContent = 'My Meeting';
+    $('title').addEventListener('input', () => {
+      // If user cleared everything, collapse whitespace so :empty::before
+      // placeholder can show.
+      if (!$('title').textContent.trim()) $('title').textContent = '';
       saveState();
     });
+    $('title').addEventListener('blur', saveState);
     $('title').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); $('title').blur(); }
     });
