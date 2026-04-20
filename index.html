@@ -71,7 +71,7 @@
       font-size: clamp(2rem, 4vw, 4rem);
       font-weight: 700;
       margin-bottom: clamp(0.4rem, 1vh, 0.8rem);
-      background: linear-gradient(to right, #c4b5fd, #f0abfc, #f472b6);
+      background: linear-gradient(to right, #f7797d, #FBD786, #C6FFDD);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -85,24 +85,28 @@
     h1:hover { background-color: rgba(255,255,255,0.04); }
     h1:focus { background-color: rgba(255,255,255,0.08); }
 
-    .meta {
-      font-size: clamp(0.75rem, 1vw, 0.95rem);
-      color: rgba(255, 255, 255, 0.45);
-      margin-bottom: clamp(1.2rem, 3vh, 2.4rem);
+    .meta-target {
+      font-size: clamp(0.9rem, 1.25vw, 1.15rem);
+      color: rgba(255, 255, 255, 0.7);
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.3px;
+      margin-bottom: 0.2rem;
     }
 
-    .meta .sep {
-      display: inline-block;
-      margin: 0 0.6em;
-      opacity: 0.4;
+    .meta-now {
+      font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+      color: rgba(255, 255, 255, 0.35);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+      margin-bottom: clamp(1.2rem, 3vh, 2.4rem);
     }
 
-    .meta .arrow {
-      display: inline-block;
-      margin: 0 0.4em;
-      opacity: 0.5;
+    .meta-label {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-right: 0.5em;
+      opacity: 0.7;
+      font-size: 0.85em;
     }
 
     .countdown {
@@ -305,9 +309,8 @@
   <div class="container">
     <div class="badge" id="badge">UPCOMING</div>
     <h1 id="title" contenteditable="true" spellcheck="false">My Meeting</h1>
-    <p class="meta" id="meta">
-      <span id="metaTarget">--</span><span class="arrow">→</span><span id="metaNow">--</span>
-    </p>
+    <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
+    <p class="meta-now"><span class="meta-label">Now</span><span id="metaNow">--</span></p>
 
     <div class="countdown" id="countdown">
       <div class="unit">
@@ -335,14 +338,15 @@
       <select id="minuteInput" aria-label="Minute"></select>
       <button class="primary" id="setBtn">Set</button>
     </div>
-    <p class="preset-label">Quick set from now</p>
+    <p class="preset-label">Adjust target</p>
     <div class="preset-row">
+      <button data-preset="-60">−1 hour</button>
+      <button data-preset="-15">−15 min</button>
+      <button data-preset="-5">−5 min</button>
+      <button data-preset="5">+5 min</button>
       <button data-preset="15">+15 min</button>
-      <button data-preset="30">+30 min</button>
       <button data-preset="60">+1 hour</button>
-      <button data-preset="180">+3 hours</button>
       <button data-preset="1440">+1 day</button>
-      <button data-preset="10080">+1 week</button>
     </div>
   </div>
 
@@ -367,8 +371,8 @@
       return `${y}.${m}.${day} (${wd}) ${hh}:${mm}`;
     }
 
-    function fmtShortTime(d) {
-      return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    function fmtTimeWithSeconds(d) {
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
     function isSameDay(a, b) {
@@ -478,8 +482,8 @@
       const now = new Date();
       $('metaTarget').textContent = fmtDateTime(target);
       $('metaNow').textContent = isSameDay(target, now)
-        ? fmtShortTime(now)
-        : fmtDateTime(now);
+        ? fmtTimeWithSeconds(now)
+        : `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
     }
 
     const ACTIVE_HTML = `
@@ -560,7 +564,8 @@
     document.querySelectorAll('[data-preset]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const mins = Number(btn.dataset.preset);
-        setTarget(Date.now() + mins * 60000);
+        const base = targetMs ?? Date.now();
+        setTarget(base + mins * 60000);
       });
     });
 
@@ -582,7 +587,7 @@
     populateSelectOptions();
     loadState();
     setTarget(targetMs, { sync: false });
-    setInterval(updateMeta, 1000 * 15);
+    setInterval(updateMeta, 1000);
   </script>
 </body>
 </html>
