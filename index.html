@@ -159,7 +159,7 @@
       margin-top: clamp(0.8rem, 2vh, 1.6rem);
     }
 
-    input[type="datetime-local"], button {
+    input[type="date"], select, button {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.18);
       color: #fff;
@@ -171,15 +171,27 @@
       transition: background 0.2s, border-color 0.2s;
     }
 
-    input[type="datetime-local"] {
+    input[type="date"] {
       color-scheme: dark;
-      min-width: 220px;
     }
 
-    input[type="datetime-local"]:hover,
-    input[type="datetime-local"]:focus,
+    select {
+      appearance: none;
+      cursor: pointer;
+      padding-right: clamp(1.6rem, 2.2vw, 2rem);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%23ffffffaa' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right clamp(0.6rem, 1vw, 0.9rem) center;
+    }
+
+    select option { background: #1a1545; color: #fff; }
+
+    input[type="date"]:hover,
+    input[type="date"]:focus,
+    select:hover,
+    select:focus,
     button:hover {
-      background: rgba(255, 255, 255, 0.14);
+      background-color: rgba(255, 255, 255, 0.14);
       border-color: rgba(255, 255, 255, 0.35);
       outline: none;
     }
@@ -273,7 +285,15 @@
     </div>
 
     <div class="controls">
-      <input type="datetime-local" id="targetInput" step="900">
+      <input type="date" id="dateInput">
+      <select id="hourInput" aria-label="Hour"></select>
+      <span style="opacity:0.5">:</span>
+      <select id="minuteInput" aria-label="Minute">
+        <option value="0">00</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
+        <option value="45">45</option>
+      </select>
       <button class="primary" id="setBtn">Set</button>
     </div>
     <div class="preset-row">
@@ -307,20 +327,37 @@
       return `${y}. ${m}. ${day}. (${wd}) ${hh}:${mm}`;
     }
 
-    function toLocalInputValue(ms) {
+    function toDateInputValue(ms) {
       const d = new Date(ms);
-      const y = d.getFullYear();
-      const m = pad(d.getMonth() + 1);
-      const day = pad(d.getDate());
-      const hh = pad(d.getHours());
-      const mm = pad(d.getMinutes());
-      return `${y}-${m}-${day}T${hh}:${mm}`;
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
     }
 
-    function fromLocalInputValue(v) {
-      if (!v) return null;
-      const t = new Date(v).getTime();
+    function readInputsToMs() {
+      const dv = $('dateInput').value;
+      if (!dv) return null;
+      const [y, m, d] = dv.split('-').map(Number);
+      const h = Number($('hourInput').value);
+      const min = Number($('minuteInput').value);
+      const t = new Date(y, m - 1, d, h, min, 0, 0).getTime();
       return Number.isFinite(t) ? t : null;
+    }
+
+    function writeMsToInputs(ms) {
+      const d = new Date(ms);
+      $('dateInput').value = toDateInputValue(ms);
+      $('hourInput').value = String(d.getHours());
+      const snappedMin = Math.round(d.getMinutes() / 15) * 15;
+      $('minuteInput').value = String(snappedMin === 60 ? 45 : snappedMin);
+    }
+
+    function populateHourOptions() {
+      const sel = $('hourInput');
+      for (let h = 0; h < 24; h++) {
+        const opt = document.createElement('option');
+        opt.value = String(h);
+        opt.textContent = pad(h);
+        sel.appendChild(opt);
+      }
     }
 
     function saveState() {
@@ -358,7 +395,7 @@
 
     function setTarget(ms, { sync = true } = {}) {
       targetMs = ms;
-      $('targetInput').value = toLocalInputValue(ms);
+      writeMsToInputs(ms);
       $('deadlineInfo').textContent = `Target: ${fmtDateTime(new Date(ms))}`;
       if (sync) saveState();
       startLoop();
@@ -413,12 +450,7 @@
 
     // Event wiring
     $('setBtn').addEventListener('click', () => {
-      const ms = fromLocalInputValue($('targetInput').value);
-      if (ms != null) setTarget(ms);
-    });
-
-    $('targetInput').addEventListener('change', () => {
-      const ms = fromLocalInputValue($('targetInput').value);
+      const ms = readInputsToMs();
       if (ms != null) setTarget(ms);
     });
 
@@ -453,6 +485,7 @@
     })();
 
     // Init
+    populateHourOptions();
     loadState();
     setTarget(targetMs, { sync: false });
     updateNow();
