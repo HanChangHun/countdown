@@ -179,6 +179,29 @@
       color: rgba(251, 113, 133, 0.85);
     }
 
+    .unset-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+      letter-spacing: 0.5px;
+    }
+
+    .unset-prompt .hint {
+      font-size: clamp(0.7rem, 0.95vw, 0.85rem);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .badge[data-state="unset"] {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.55);
+    }
+
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
@@ -465,7 +488,6 @@
         } catch (e) { /* ignore */ }
       }
 
-      if (targetMs == null) targetMs = Date.now();
     }
 
     function setTarget(ms, { sync = true } = {}) {
@@ -477,9 +499,13 @@
     }
 
     function updateMeta() {
-      if (targetMs == null) return;
-      const target = new Date(targetMs);
       const now = new Date();
+      if (targetMs == null) {
+        $('metaTarget').textContent = 'Not set';
+        $('metaNow').textContent = `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
+        return;
+      }
+      const target = new Date(targetMs);
       $('metaTarget').textContent = fmtDateTime(target);
       $('metaNow').textContent = isSameDay(target, now)
         ? fmtTimeWithSeconds(now)
@@ -498,21 +524,45 @@
         <div class="label" id="elapsedLabel">Started ago</div>
       </div>`;
 
+    const UNSET_HTML = `
+      <div class="unset-prompt">
+        <div>Set a target time to start the countdown</div>
+        <div class="hint">Pick a date &amp; time below, or use a preset</div>
+      </div>`;
+
+    const STATE_HTML = {
+      active: ACTIVE_HTML,
+      expired: ELAPSED_HTML,
+      unset: UNSET_HTML,
+    };
+
     function setCountdownState(state) {
       const cd = $('countdown');
       if (cd.dataset.state === state) return;
       cd.dataset.state = state;
-      cd.innerHTML = state === 'expired' ? ELAPSED_HTML : ACTIVE_HTML;
+      cd.innerHTML = STATE_HTML[state];
     }
+
+    const BADGE_TEXT = {
+      upcoming: 'UPCOMING',
+      started: 'STARTED',
+      unset: 'NOT SET',
+    };
 
     function setBadgeState(state) {
       const b = $('badge');
       if (b.dataset.state === state) return;
       b.dataset.state = state;
-      b.textContent = state === 'started' ? 'STARTED' : 'UPCOMING';
+      b.textContent = BADGE_TEXT[state];
     }
 
     function render() {
+      if (targetMs == null) {
+        setCountdownState('unset');
+        setBadgeState('unset');
+        return;
+      }
+
       const diff = targetMs - Date.now();
 
       if (diff <= 0) {
@@ -586,7 +636,13 @@
     // Init
     populateSelectOptions();
     loadState();
-    setTarget(targetMs, { sync: false });
+    if (targetMs == null) {
+      writeMsToInputs(Date.now());
+      updateMeta();
+      render();
+    } else {
+      setTarget(targetMs, { sync: false });
+    }
     setInterval(updateMeta, 1000);
   </script>
 </body>
