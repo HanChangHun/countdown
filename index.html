@@ -336,16 +336,14 @@
       border-radius: 14px;
     }
 
-    .footer-hint {
-      margin-top: clamp(1.6rem, 3.5vh, 2.8rem);
+    .title-hint {
+      margin-top: 0.3rem;
+      margin-bottom: clamp(0.6rem, 1.4vh, 1rem);
       font-size: clamp(0.65rem, 0.85vw, 0.78rem);
-      color: rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.45);
       letter-spacing: 0.4px;
       font-style: italic;
-      transition: color 0.3s ease;
     }
-
-    .footer-hint:hover { color: rgba(255, 255, 255, 0.45); }
 
     .particles {
       position: fixed;
@@ -383,6 +381,7 @@
   <div class="container">
     <div class="badge" id="badge">UPCOMING</div>
     <h1 id="title" contenteditable="true" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Meeting</h1>
+    <p class="title-hint">click the title to rename it</p>
     <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
     <p class="meta-now"><span class="meta-label">Now</span><span id="metaNow">--</span></p>
 
@@ -422,7 +421,6 @@
       <button data-preset="60">+1 hour</button>
       <button data-preset="1440">+1 day</button>
     </div>
-    <p class="footer-hint">psst… click the title above to rename it</p>
   </div>
 
   <script>
