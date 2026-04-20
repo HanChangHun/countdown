@@ -76,7 +76,7 @@
       font-size: clamp(2rem, 4vw, 4rem);
       font-weight: 700;
       margin-bottom: clamp(0.4rem, 1vh, 0.8rem);
-      background: linear-gradient(to right, #f7797d, #FBD786, #C6FFDD);
+      background: linear-gradient(to right, #f7797d, #FBD786);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -336,6 +336,17 @@
       border-radius: 14px;
     }
 
+    .footer-hint {
+      margin-top: clamp(1.6rem, 3.5vh, 2.8rem);
+      font-size: clamp(0.65rem, 0.85vw, 0.78rem);
+      color: rgba(255, 255, 255, 0.22);
+      letter-spacing: 0.4px;
+      font-style: italic;
+      transition: color 0.3s ease;
+    }
+
+    .footer-hint:hover { color: rgba(255, 255, 255, 0.45); }
+
     .particles {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -371,7 +382,7 @@
 
   <div class="container">
     <div class="badge" id="badge">UPCOMING</div>
-    <h1 id="title" contenteditable="true" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Countdown</h1>
+    <h1 id="title" contenteditable="true" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Meeting</h1>
     <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
     <p class="meta-now"><span class="meta-label">Now</span><span id="metaNow">--</span></p>
 
@@ -411,6 +422,7 @@
       <button data-preset="60">+1 hour</button>
       <button data-preset="1440">+1 day</button>
     </div>
+    <p class="footer-hint">psst… click the title above to rename it</p>
   </div>
 
   <script>
