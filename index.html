@@ -288,12 +288,7 @@
       <input type="date" id="dateInput">
       <select id="hourInput" aria-label="Hour"></select>
       <span style="opacity:0.5">:</span>
-      <select id="minuteInput" aria-label="Minute">
-        <option value="0">00</option>
-        <option value="15">15</option>
-        <option value="30">30</option>
-        <option value="45">45</option>
-      </select>
+      <select id="minuteInput" aria-label="Minute"></select>
       <button class="primary" id="setBtn">Set</button>
     </div>
     <div class="preset-row">
@@ -342,21 +337,30 @@
       return Number.isFinite(t) ? t : null;
     }
 
+    const MINUTE_STEP = 5;
+
     function writeMsToInputs(ms) {
       const d = new Date(ms);
       $('dateInput').value = toDateInputValue(ms);
       $('hourInput').value = String(d.getHours());
-      const snappedMin = Math.round(d.getMinutes() / 15) * 15;
-      $('minuteInput').value = String(snappedMin === 60 ? 45 : snappedMin);
+      const snapped = Math.round(d.getMinutes() / MINUTE_STEP) * MINUTE_STEP;
+      $('minuteInput').value = String(snapped >= 60 ? 60 - MINUTE_STEP : snapped);
     }
 
-    function populateHourOptions() {
-      const sel = $('hourInput');
+    function populateSelectOptions() {
+      const hourSel = $('hourInput');
       for (let h = 0; h < 24; h++) {
         const opt = document.createElement('option');
         opt.value = String(h);
         opt.textContent = pad(h);
-        sel.appendChild(opt);
+        hourSel.appendChild(opt);
+      }
+      const minSel = $('minuteInput');
+      for (let m = 0; m < 60; m += MINUTE_STEP) {
+        const opt = document.createElement('option');
+        opt.value = String(m);
+        opt.textContent = pad(m);
+        minSel.appendChild(opt);
       }
     }
 
@@ -485,7 +489,7 @@
     })();
 
     // Init
-    populateHourOptions();
+    populateSelectOptions();
     loadState();
     setTarget(targetMs, { sync: false });
     updateNow();
