@@ -549,12 +549,25 @@
     }
 
     function saveState() {
+      const title = $('title').textContent.trim();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           target: targetMs,
-          title: $('title').textContent.trim(),
+          title,
         }));
       } catch (e) { /* ignore */ }
+      syncUrl(title);
+    }
+
+    function syncUrl(title) {
+      const params = new URLSearchParams();
+      if (targetMs != null) params.set('t', String(targetMs));
+      if (title) params.set('title', title);
+      const qs = params.toString();
+      const newUrl = qs
+        ? `${location.pathname}?${qs}`
+        : location.pathname;
+      history.replaceState(null, '', newUrl);
     }
 
     function loadState() {

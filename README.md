@@ -8,7 +8,7 @@ A simple, minimalist countdown web app for any event — meetings, deadlines, la
 
 - **Rename anything** — click the title to label your countdown (e.g. "Flight", "Deadline", "Wedding").
 - **Pick a target** — choose a date and time, or use the quick adjust buttons (±5 min, ±15 min, ±1 hour, +1 day).
-- **Lives in the URL & local storage** — your target and title persist across reloads, and you can share a link via `?t=<ms>&title=<name>` query params.
+- **Shareable URLs** — the address bar auto-updates as you set the target or rename the title, so you can just copy the URL to share a preconfigured countdown. State also persists in local storage across reloads.
 - **Keeps running past zero** — when the target passes, it flips to show elapsed time ("Started ago").
 - **Zero setup** — one `index.html`, no build step, no dependencies.
 
@@ -24,10 +24,12 @@ cd countdown-web
 
 ### Sharing a countdown
 
-You can share a preconfigured countdown via URL:
+Set your target and title on the page — the URL in your address bar updates automatically. Just copy and send it.
+
+Example:
 
 ```
-https://hanchanghun.github.io/countdown-web/?t=1735689600000&title=New%20Year
+https://hanchanghun.github.io/countdown-web/?t=1735689600000&title=New+Year
 ```
 
 - `t` — target time in milliseconds since epoch
