@@ -774,6 +774,8 @@
     } else {
       setTarget(targetMs, { sync: false });
     }
+    // Normalize the URL to the current canonical format (legacy ?t=<ms> -> ?at=ISO).
+    syncUrl($('title').textContent.trim());
     setInterval(updateMeta, 1000);
   </script>
 </body>
