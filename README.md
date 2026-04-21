@@ -29,11 +29,12 @@ Set your target and title on the page — the URL in your address bar updates au
 Example:
 
 ```
-https://hanchanghun.github.io/countdown-web/?t=1735689600000&title=New+Year
+https://hanchanghun.github.io/countdown-web/?at=2027-01-01T00:00&title=New+Year
 ```
 
-- `t` — target time in milliseconds since epoch
+- `at` — target time in local ISO format (`YYYY-MM-DDTHH:MM`), interpreted in the viewer's local timezone
 - `title` — display label (URL-encoded)
+- Legacy `t=<ms since epoch>` links still work
 
 ## License
 

@@ -559,22 +559,39 @@
       syncUrl(title);
     }
 
+    function fmtIsoLocal(ms) {
+      const d = new Date(ms);
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+        + `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function parseIsoLocal(s) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(s);
+      if (!m) return NaN;
+      const [, y, mo, d, h, mi] = m;
+      return new Date(+y, +mo - 1, +d, +h, +mi, 0, 0).getTime();
+    }
+
     function syncUrl(title) {
-      const params = new URLSearchParams();
-      if (targetMs != null) params.set('t', String(targetMs));
-      if (title) params.set('title', title);
-      const qs = params.toString();
-      const newUrl = qs
-        ? `${location.pathname}?${qs}`
-        : location.pathname;
+      // Manually construct query string so `:` in the ISO timestamp and
+      // spaces in the title stay readable in the address bar.
+      const parts = [];
+      if (targetMs != null) parts.push(`at=${fmtIsoLocal(targetMs)}`);
+      if (title) parts.push(`title=${encodeURIComponent(title).replace(/%20/g, '+')}`);
+      const qs = parts.join('&');
+      const newUrl = qs ? `${location.pathname}?${qs}` : location.pathname;
       history.replaceState(null, '', newUrl);
     }
 
     function loadState() {
       const url = new URL(window.location.href);
+      const qAt = url.searchParams.get('at');
       const qTarget = url.searchParams.get('t');
       const qTitle = url.searchParams.get('title');
-      if (qTarget) {
+      if (qAt) {
+        const t = parseIsoLocal(qAt);
+        if (Number.isFinite(t)) targetMs = t;
+      } else if (qTarget) {
         const t = Number(qTarget);
         if (Number.isFinite(t)) targetMs = t;
       }
