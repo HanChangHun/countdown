@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1545">
+  <title>Countdown</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+    <div class="badge" id="badge">UPCOMING</div>
+    <h1 id="title" contenteditable="plaintext-only" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Meeting</h1>
+    <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
+    <p class="meta-now"><span class="meta-label">Now</span><span id="metaNow">--</span></p>
+
+    <div class="countdown" id="countdown">
+      <div class="unit">
+        <div class="number" id="days">--</div>
+        <div class="label">Days</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="hours">--</div>
+        <div class="label">Hours</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="minutes">--</div>
+        <div class="label">Min</div>
+      </div>
+      <div class="unit">
+        <div class="number" id="seconds">--</div>
+        <div class="label">Sec</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input type="date" id="dateInput">
+      <select id="hourInput" aria-label="Hour"></select>
+      <span style="opacity:0.5">:</span>
+      <select id="minuteInput" aria-label="Minute"></select>
+      <button class="primary" id="setBtn">Set</button>
+      <button class="ghost" id="resetBtn" title="Clear the target">Reset</button>
+    </div>
+    <div class="preset-row">
+      <button data-preset="-60">−1 hour</button>
+      <button data-preset="-15">−15 min</button>
+      <button data-preset="-5">−5 min</button>
+      <button data-preset="5">+5 min</button>
+      <button data-preset="15">+15 min</button>
+      <button data-preset="60">+1 hour</button>
+      <button data-preset="1440">+1 day</button>
+    </div>
+
+    <p class="credit">by <a href="https://github.com/HanChangHun" target="_blank" rel="noopener">HanChangHun</a></p>
+    <button class="link-btn" id="checkUpdates" type="button">check for updates</button>
+  </div>
+
+  <div class="update-banner" id="updateBanner" hidden>
+    <span id="updateMsg"></span>
+    <button class="primary" id="updateInstall" type="button">Install &amp; restart</button>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

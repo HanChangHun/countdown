@@ -1,0 +1,28 @@
+[package]
+name = "countdown-app"
+version = "0.1.0"
+description = "Countdown / stopwatch desktop app"
+authors = ["Han Changhun"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "countdown_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-window-state = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

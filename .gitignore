@@ -1,0 +1,27 @@
+# Claude Code session metadata
+.claude/
+
+# Node
+app/node_modules/
+
+# Tauri / Rust build artifacts (created in the app/ subproject)
+app/src-tauri/target/
+app/src-tauri/gen/
+
+# Updater signing secret + local installer copies (never commit)
+app/.env
+app/installers/
+
+# Python cache (scripts/gen-icons.py)
+__pycache__/
+*.pyc
+
+# Build logs
+build.log
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/

@@ -1,0 +1,452 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;            /* Firefox */
+  color-scheme: dark;               /* dark native controls incl. select popups */
+}
+
+/* Hide the scrollbar chrome but keep wheel/touch scrolling. */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar { display: none; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: safe center;
+  justify-content: safe center;
+  background: #1a1545;
+  color: #fff;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.bg {
+  position: fixed;
+  top: -50px;
+  left: -50px;
+  right: -50px;
+  bottom: -50px;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  z-index: -2;
+}
+
+.container {
+  text-align: center;
+  padding: clamp(0.8rem, 2.5vh, 2rem) clamp(1rem, 3vw, 3rem);
+  max-width: min(80vw, 820px);
+  width: 100%;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(192, 132, 252, 0.12);
+  border: 1px solid rgba(192, 132, 252, 0.28);
+  border-radius: 20px;
+  padding: clamp(4px, 0.7vh, 8px) clamp(12px, 1.8vw, 20px);
+  font-size: clamp(0.65rem, 0.9vw, 0.85rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: clamp(0.4rem, 1vh, 1rem);
+  backdrop-filter: blur(10px);
+  color: rgba(230, 220, 255, 0.95);
+  transition: background 0.3s, border-color 0.3s, color 0.3s;
+}
+
+.badge[data-state="started"] {
+  background: rgba(244, 114, 182, 0.14);
+  border-color: rgba(244, 114, 182, 0.35);
+  color: #fbcfe8;
+}
+
+h1 {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 700;
+  margin-bottom: clamp(0.4rem, 1vh, 0.8rem);
+  background: linear-gradient(to right, #f7797d, #FBD786);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  outline: none;
+  cursor: text;
+  padding: 0.05em 0.35em;
+  border-radius: 10px;
+  min-height: 1.2em;
+  min-width: 4ch;
+  transition: background-color 0.2s;
+}
+
+h1:hover { background-color: rgba(255,255,255,0.05); }
+h1:focus { background-color: rgba(255,255,255,0.09); }
+
+h1::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0.05em;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: center;
+  transition: opacity 0.25s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+h1:hover::after { opacity: 1; transform: scaleX(1); }
+h1:focus::after { opacity: 0; }
+
+h1:empty::before {
+  content: attr(data-placeholder);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.32);
+  background: none;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: -0.3px;
+}
+
+h1:focus:empty::before { opacity: 0.6; }
+
+.meta-target {
+  font-size: clamp(0.9rem, 1.25vw, 1.15rem);
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  margin-bottom: 0.2rem;
+}
+
+.meta-now {
+  font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+  color: rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  margin-bottom: clamp(0.7rem, 2.2vh, 2rem);
+}
+
+.meta-label {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-right: 0.5em;
+  opacity: 0.7;
+  font-size: 0.85em;
+}
+
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.4rem, 1.2vw, 1.1rem);
+  margin-bottom: clamp(0.8rem, 1.8vh, 1.8rem);
+  flex-wrap: nowrap;
+  min-height: clamp(4.5rem, 13vh, 9.5rem);
+  align-items: center;
+}
+
+.unit {
+  flex: 0 0 auto;
+  width: clamp(52px, 15vw, 148px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: clamp(10px, 1.2vw, 18px);
+  padding: clamp(0.6rem, 3vw, 1.8rem) 0;
+  backdrop-filter: blur(20px);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.unit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(192, 132, 252, 0.2);
+}
+
+.unit .number {
+  font-size: clamp(1.3rem, 7.5vw, 3.6rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.unit .label {
+  font-size: clamp(0.5rem, 1.7vw, 0.8rem);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: clamp(0.3rem, 0.6vh, 0.6rem);
+}
+
+.elapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.3rem, 0.8vh, 0.6rem);
+}
+
+.elapsed .number {
+  font-size: clamp(2rem, 4.2vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  background: linear-gradient(to right, #f472b6, #fb7185);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.elapsed .label {
+  font-size: clamp(0.65rem, 1vw, 0.95rem);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(251, 113, 133, 0.85);
+}
+
+.unset-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+  letter-spacing: 0.5px;
+}
+
+.badge[data-state="unset"] {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(0.4rem, 1vw, 0.8rem);
+  flex-wrap: wrap;
+  margin-top: clamp(0.8rem, 2vh, 1.6rem);
+}
+
+input[type="date"], select, button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 10px;
+  height: clamp(2.1rem, 5vw, 2.8rem);
+  padding: 0 clamp(0.5rem, 1.6vw, 1.1rem);
+  font-size: clamp(0.68rem, 2.2vw, 0.95rem);
+  font-family: inherit;
+  line-height: 1;
+  backdrop-filter: blur(10px);
+  transition: background 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+select {
+  appearance: none;
+  cursor: pointer;
+  padding-right: clamp(1.6rem, 2.2vw, 2rem);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%23ffffffaa' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right clamp(0.6rem, 1vw, 0.9rem) center;
+}
+
+select option { background: #1a1545; color: #fff; }
+
+input[type="date"]:hover,
+input[type="date"]:focus,
+select:hover,
+select:focus,
+button:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+button.primary {
+  background: linear-gradient(135deg, rgba(192,132,252,0.4), rgba(244,114,182,0.3));
+  border-color: rgba(244,114,182,0.45);
+  color: #fff;
+}
+
+button.primary:hover {
+  background: linear-gradient(135deg, rgba(192,132,252,0.55), rgba(244,114,182,0.45));
+  border-color: rgba(244,114,182,0.65);
+}
+
+button.ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+button.ghost:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.preset-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: clamp(1rem, 2.5vh, 1.8rem);
+}
+
+.preset-row button {
+  height: auto;
+  padding: 0.4rem 0.9rem;
+  font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+  border-radius: 14px;
+}
+
+.particles {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+.credit {
+  margin-top: clamp(1.4rem, 3.5vh, 2.4rem);
+  font-size: clamp(0.65rem, 0.8vw, 0.75rem);
+  color: rgba(255, 255, 255, 0.22);
+  letter-spacing: 0.5px;
+}
+
+.credit a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+  transition: color 0.25s, border-color 0.25s;
+}
+
+.credit a:hover {
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  height: auto;
+  padding: 0;
+  margin-top: clamp(0.4rem, 1vh, 0.7rem);
+  color: rgba(255, 255, 255, 0.3);
+  font-family: inherit;
+  font-size: clamp(0.62rem, 0.78vw, 0.72rem);
+  letter-spacing: 0.4px;
+  text-decoration: underline dotted;
+  backdrop-filter: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.link-btn:hover { color: rgba(255, 255, 255, 0.6); background: none; }
+
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.5rem 1rem;
+  background: rgba(48, 43, 99, 0.97);
+  border-bottom: 1px solid rgba(192, 132, 252, 0.4);
+  backdrop-filter: blur(8px);
+  font-size: clamp(0.72rem, 0.95vw, 0.88rem);
+  color: #fff;
+}
+
+.update-banner[hidden] { display: none; }
+
+.update-banner button {
+  height: auto;
+  padding: 0.35rem 0.8rem;
+  font-size: clamp(0.7rem, 0.9vw, 0.82rem);
+  border-radius: 10px;
+}
+
+@media (max-width: 600px) {
+  .container { max-width: 100%; }
+  html, body { overflow: auto; }
+}
+
+/* Compact "glance" mode: when the window is short, drop the heavy setup chrome
+   (date/time picker, Set, badge, NOW clock, credit) but keep the name, the
+   TARGET line, the countdown, the fine ±5/±15 pills, and a quiet Reset footer —
+   enough to read, nudge, and clear the target without enlarging the window. */
+@media (max-height: 440px) {
+  .badge,
+  .meta-now,
+  .credit,
+  #checkUpdates { display: none; }
+
+  /* from the full controls row, keep only Reset */
+  .controls > :not(#resetBtn) { display: none; }
+
+  /* drop the coarse jumps; keep the fine ±5 / ±15 pills */
+  .preset-row button[data-preset="-60"],
+  .preset-row button[data-preset="60"],
+  .preset-row button[data-preset="1440"] { display: none; }
+
+  /* stack vertically so Reset can sit as a quiet footer below the pills */
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: clamp(0.5rem, 3vh, 1.2rem);
+    padding-bottom: clamp(0.5rem, 3vh, 1.2rem);
+  }
+
+  h1 { margin-bottom: clamp(0.2rem, 1.5vh, 0.6rem); }
+  .meta-target { margin-bottom: clamp(0.4rem, 1.5vh, 0.9rem); }
+  .countdown { min-height: 0; margin-bottom: clamp(0.5rem, 2vh, 1rem); }
+  .preset-row { order: 1; margin-top: clamp(0.4rem, 1.5vh, 0.9rem); }
+  .controls { order: 2; margin-top: clamp(0.5rem, 2vh, 1rem); }
+}
