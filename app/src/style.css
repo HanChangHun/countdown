@@ -11,19 +11,133 @@ html, body {
   color-scheme: dark;               /* dark native controls incl. select popups */
 }
 
-/* Hide the scrollbar chrome but keep wheel/touch scrolling. */
-html::-webkit-scrollbar,
-body::-webkit-scrollbar { display: none; }
+/* Hide all scrollbar chrome but keep wheel/touch scrolling. */
+*::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 body {
   display: flex;
-  flex-direction: column;
-  align-items: safe center;
-  justify-content: safe center;
+  flex-direction: row;
+  align-items: stretch;
   background: #1a1545;
   color: #fff;
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+/* Main area: the selected timer, vertically centered (safe = never top-clip). */
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: safe center;
+  justify-content: safe center;
+  overflow: auto;
+  scrollbar-width: none;
+}
+
+/* Right sidebar: the list of timers + the update check. */
+.sidebar {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 0.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+  scrollbar-width: none;
+  z-index: 2;
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+#addTimer {
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.timer-list {
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.timer-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.timer-item:hover { background: rgba(255, 255, 255, 0.08); }
+
+.timer-item.active {
+  background: rgba(192, 132, 252, 0.16);
+  border-color: rgba(192, 132, 252, 0.4);
+}
+
+.ti-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ti-rem {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timer-item.expired .ti-rem { color: rgba(251, 113, 133, 0.9); }
+
+.ti-del {
+  height: auto;
+  padding: 0 0.2rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  backdrop-filter: none;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.timer-item:hover .ti-del { opacity: 1; }
+.ti-del:hover { color: #fb7185; background: none; }
+
+.sidebar .link-btn { text-align: center; margin-top: 0; }
 
 .bg {
   position: fixed;
@@ -415,6 +529,12 @@ button.ghost:hover {
 @media (max-width: 600px) {
   .container { max-width: 100%; }
   html, body { overflow: auto; }
+}
+
+/* Hide the timers sidebar when the window is short or narrow; the selected
+   timer then uses the full window (matching the compact "glance" mode). */
+@media (max-height: 440px), (max-width: 679px) {
+  .sidebar { display: none; }
 }
 
 /* Compact "glance" mode: when the window is short, drop the heavy setup chrome

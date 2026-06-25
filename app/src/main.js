@@ -1,21 +1,35 @@
-const STORAGE_KEY = 'ch-countdown:v1';
+const STORAGE_KEY = 'ch-countdown:v2';
+const LEGACY_KEY = 'ch-countdown:v1';
 const DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MINUTE_STEP = 5;
 
-let targetMs = null;
+// timers: [{ id, title, targetMs|null }]
+let timers = [];
+let selectedId = null;
 let timerId = null;
 
 const $ = (id) => document.getElementById(id);
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
+function uid() {
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+function selected() {
+  return timers.find((t) => t.id === selectedId) || null;
+}
+
+// ---------- formatting ----------
 function fmtDateTime(d) {
-  const y = d.getFullYear();
-  const m = d.getMonth() + 1;
-  const day = d.getDate();
   const wd = DAYS_EN[d.getDay()];
-  const hh = pad(d.getHours());
-  const mm = pad(d.getMinutes());
-  return `${y}.${m}.${day} (${wd}) ${hh}:${mm}`;
+  return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} (${wd}) ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function fmtTimeWithSeconds(d) {
@@ -40,6 +54,26 @@ function fmtElapsed(ms) {
   return `${s}s`;
 }
 
+// Short form for the sidebar list.
+function fmtShort(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const d = Math.floor(totalSec / 86400);
+  const h = Math.floor((totalSec % 86400) / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${pad(s)}s`;
+  return `${s}s`;
+}
+
+function miniRemaining(t) {
+  if (t.targetMs == null) return 'not set';
+  const diff = t.targetMs - Date.now();
+  return diff <= 0 ? 'started' : fmtShort(diff);
+}
+
+// ---------- date/time controls ----------
 function toDateInputValue(ms) {
   const d = new Date(ms);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -55,8 +89,6 @@ function readInputsToMs() {
   return Number.isFinite(t) ? t : null;
 }
 
-const MINUTE_STEP = 5;
-
 function writeMsToInputs(ms) {
   const d = new Date(ms);
   $('dateInput').value = toDateInputValue(ms);
@@ -64,9 +96,8 @@ function writeMsToInputs(ms) {
   setMinuteValue(d.getMinutes());
 }
 
-// Select the given minute, injecting a one-off <option> when the target is
-// off the 5-minute grid so the control always reflects the real target
-// (otherwise the display would round independently of the stored target).
+// Select the given minute, injecting a one-off <option> when the target is off
+// the 5-minute grid so the control always reflects the real target.
 function setMinuteValue(min) {
   const sel = $('minuteInput');
   const prevExtra = sel.querySelector('option[data-extra]');
@@ -99,62 +130,66 @@ function populateSelectOptions() {
   }
 }
 
-function saveState() {
+// ---------- persistence ----------
+function save() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      target: targetMs,
-      title: $('title').textContent.trim(),
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ timers, selectedId }));
   } catch (e) { /* ignore */ }
 }
 
-function loadState() {
-  const url = new URL(window.location.href);
-  const qTarget = url.searchParams.get('t');
-  const qTitle = url.searchParams.get('title');
-  if (qTarget != null) {
-    const t = Number(qTarget);
-    if (Number.isFinite(t) && t > 0) targetMs = t;
-  }
-  if (qTitle != null) $('title').textContent = qTitle.trim();
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (Array.isArray(s.timers)) {
+        timers = s.timers
+          .filter((t) => t && typeof t.id === 'string')
+          .map((t) => ({
+            id: t.id,
+            title: typeof t.title === 'string' ? t.title : '',
+            targetMs: Number.isFinite(t.targetMs) ? t.targetMs : null,
+          }));
+        selectedId = s.selectedId;
+      }
+    }
+  } catch (e) { /* ignore */ }
 
-  if (targetMs == null) {
+  // Migrate the old single-timer state.
+  if (!timers.length) {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(LEGACY_KEY);
       if (raw) {
         const s = JSON.parse(raw);
-        if (Number.isFinite(s.target) && s.target > 0) targetMs = s.target;
-        if (s.title !== undefined) $('title').textContent = s.title;
+        timers = [{
+          id: uid(),
+          title: typeof s.title === 'string' ? s.title : 'Meeting',
+          targetMs: Number.isFinite(s.target) ? s.target : null,
+        }];
       }
     } catch (e) { /* ignore */ }
   }
 
-}
+  if (!timers.length) timers = [{ id: uid(), title: 'Meeting', targetMs: null }];
+  if (!selected()) selectedId = timers[0].id;
 
-function setTarget(ms, { sync = true } = {}) {
-  // Truncate to the minute so the controls (minute granularity) and the
-  // stored target always agree — a no-op "Set" then can't shift the target.
-  targetMs = Math.floor(ms / 60000) * 60000;
-  writeMsToInputs(targetMs);
-  if (sync) saveState();
-  updateMeta();
-  startLoop();
-}
-
-function updateMeta() {
-  const now = new Date();
-  if (targetMs == null) {
-    $('metaTarget').textContent = 'Not set';
-    $('metaNow').textContent = `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
-    return;
+  // URL params apply to the selected timer (sharing / testing).
+  const url = new URL(window.location.href);
+  const at = url.searchParams.get('at');
+  const t = url.searchParams.get('t');
+  const title = url.searchParams.get('title');
+  const sel = selected();
+  if (at) {
+    const ms = Date.parse(at);
+    if (Number.isFinite(ms)) sel.targetMs = Math.floor(ms / 60000) * 60000;
+  } else if (t) {
+    const ms = Number(t);
+    if (Number.isFinite(ms) && ms > 0) sel.targetMs = Math.floor(ms / 60000) * 60000;
   }
-  const target = new Date(targetMs);
-  $('metaTarget').textContent = fmtDateTime(target);
-  $('metaNow').textContent = isSameDay(target, now)
-    ? fmtTimeWithSeconds(now)
-    : `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
+  if (title != null) sel.title = title.trim();
 }
 
+// ---------- main view ----------
 const ACTIVE_HTML = `
   <div class="unit"><div class="number" id="days">--</div><div class="label">Days</div></div>
   <div class="unit"><div class="number" id="hours">--</div><div class="label">Hours</div></div>
@@ -172,11 +207,7 @@ const UNSET_HTML = `
     <div>Pick a target below to start</div>
   </div>`;
 
-const STATE_HTML = {
-  active: ACTIVE_HTML,
-  expired: ELAPSED_HTML,
-  unset: UNSET_HTML,
-};
+const STATE_HTML = { active: ACTIVE_HTML, expired: ELAPSED_HTML, unset: UNSET_HTML };
 
 function setCountdownState(state) {
   const cd = $('countdown');
@@ -185,11 +216,7 @@ function setCountdownState(state) {
   cd.innerHTML = STATE_HTML[state];
 }
 
-const BADGE_TEXT = {
-  upcoming: 'UPCOMING',
-  started: 'STARTED',
-  unset: 'NOT SET',
-};
+const BADGE_TEXT = { upcoming: 'UPCOMING', started: 'STARTED', unset: 'NOT SET' };
 
 function setBadgeState(state) {
   const b = $('badge');
@@ -198,47 +225,79 @@ function setBadgeState(state) {
   b.textContent = BADGE_TEXT[state];
 }
 
-function render() {
-  if (targetMs == null) {
+function updateMeta(ms) {
+  const now = new Date();
+  if (ms == null) {
+    $('metaTarget').textContent = 'Not set';
+    $('metaNow').textContent = `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
+    return;
+  }
+  const target = new Date(ms);
+  $('metaTarget').textContent = fmtDateTime(target);
+  $('metaNow').textContent = isSameDay(target, now)
+    ? fmtTimeWithSeconds(now)
+    : `${fmtDateTime(now)}:${pad(now.getSeconds())}`;
+}
+
+// Render the selected timer in the main area. Does NOT touch the title element
+// (so editing isn't disrupted) — title is set on select/init.
+function renderMain() {
+  const sel = selected();
+  const ms = sel ? sel.targetMs : null;
+  updateMeta(ms);
+
+  if (ms == null) {
     setCountdownState('unset');
     setBadgeState('unset');
     return;
   }
 
-  const diff = targetMs - Date.now();
-
+  const diff = ms - Date.now();
   if (diff <= 0) {
     setCountdownState('expired');
     setBadgeState('started');
-    const elapsed = -diff;
-    $('elapsedNumber').textContent = fmtElapsed(elapsed);
+    $('elapsedNumber').textContent = fmtElapsed(-diff);
     $('elapsedLabel').textContent = 'Started ago';
     return;
   }
 
   setCountdownState('active');
   setBadgeState('upcoming');
-
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-  const seconds = Math.floor((diff % 60000) / 1000);
-
-  $('days').textContent = pad(days);
-  $('hours').textContent = pad(hours);
-  $('minutes').textContent = pad(minutes);
-  $('seconds').textContent = pad(seconds);
+  $('days').textContent = pad(Math.floor(diff / 86400000));
+  $('hours').textContent = pad(Math.floor((diff % 86400000) / 3600000));
+  $('minutes').textContent = pad(Math.floor((diff % 3600000) / 60000));
+  $('seconds').textContent = pad(Math.floor((diff % 60000) / 1000));
 }
 
-// Tick once per wall-clock second while a target is set. The display only
-// changes once per second, so a 1 Hz timer replaces the old per-frame
-// requestAnimationFrame loop (which spun at 60-144 Hz forever, wasting
-// CPU/battery on an always-open desktop widget).
-function tick() {
-  render();
-  if (targetMs != null) {
-    timerId = setTimeout(tick, 1000 - (Date.now() % 1000));
+// ---------- sidebar ----------
+function renderSidebar() {
+  $('timerList').innerHTML = timers.map((t) => {
+    const expired = t.targetMs != null && t.targetMs - Date.now() <= 0;
+    const cls = `timer-item${t.id === selectedId ? ' active' : ''}${expired ? ' expired' : ''}`;
+    return `
+    <li class="${cls}" data-id="${t.id}">
+      <span class="ti-title">${escapeHtml(t.title || 'Untitled')}</span>
+      <span class="ti-rem" data-rem>${miniRemaining(t)}</span>
+      <button class="ti-del" type="button" title="Remove" aria-label="Remove timer">×</button>
+    </li>`;
+  }).join('');
+}
+
+function updateSidebarTimes() {
+  for (const li of $('timerList').children) {
+    const t = timers.find((x) => x.id === li.dataset.id);
+    if (!t) continue;
+    const rem = li.querySelector('[data-rem]');
+    if (rem) rem.textContent = miniRemaining(t);
+    li.classList.toggle('expired', t.targetMs != null && t.targetMs - Date.now() <= 0);
   }
+}
+
+// ---------- loop (1 Hz, always running) ----------
+function tick() {
+  renderMain();
+  updateSidebarTimes();
+  timerId = setTimeout(tick, 1000 - (Date.now() % 1000));
 }
 
 function startLoop() {
@@ -246,43 +305,103 @@ function startLoop() {
   tick();
 }
 
-// Event wiring
+// ---------- timer actions ----------
+function selectTimer(id) {
+  selectedId = id;
+  const sel = selected();
+  if (!sel) return;
+  $('title').textContent = sel.title || '';
+  writeMsToInputs(sel.targetMs ?? Date.now());
+  save();
+  renderMain();
+  renderSidebar();
+}
+
+function setTargetForSelected(ms) {
+  const sel = selected();
+  if (!sel) return;
+  // Truncate to the minute so the controls and the stored target always agree.
+  sel.targetMs = Math.floor(ms / 60000) * 60000;
+  writeMsToInputs(sel.targetMs);
+  save();
+  renderMain();
+  renderSidebar();
+}
+
+function addTimer() {
+  const t = { id: uid(), title: `Timer ${timers.length + 1}`, targetMs: null };
+  timers.push(t);
+  selectTimer(t.id);
+}
+
+function deleteTimer(id) {
+  const i = timers.findIndex((t) => t.id === id);
+  if (i < 0) return;
+  timers.splice(i, 1);
+  if (!timers.length) timers.push({ id: uid(), title: 'Meeting', targetMs: null });
+  if (selectedId === id) selectedId = timers[Math.min(i, timers.length - 1)].id;
+  const sel = selected();
+  $('title').textContent = sel.title || '';
+  writeMsToInputs(sel.targetMs ?? Date.now());
+  save();
+  renderMain();
+  renderSidebar();
+}
+
+// ---------- event wiring ----------
 $('setBtn').addEventListener('click', () => {
   const ms = readInputsToMs();
-  if (ms != null) setTarget(ms);
+  if (ms != null) setTargetForSelected(ms);
 });
 
 $('resetBtn').addEventListener('click', () => {
-  targetMs = null;
-  saveState();
+  const sel = selected();
+  if (!sel) return;
+  sel.targetMs = null;       // title is intentionally preserved
   writeMsToInputs(Date.now());
-  updateMeta();
-  clearTimeout(timerId);
-  render();
+  save();
+  renderMain();
+  renderSidebar();
 });
 
 $('title').addEventListener('input', () => {
-  // If user cleared everything, collapse whitespace so :empty::before
-  // placeholder can show.
+  const sel = selected();
+  if (!sel) return;
   if (!$('title').textContent.trim()) $('title').textContent = '';
-  saveState();
+  sel.title = $('title').textContent.trim();
+  for (const li of $('timerList').children) {
+    if (li.dataset.id === sel.id) {
+      li.querySelector('.ti-title').textContent = sel.title || 'Untitled';
+      break;
+    }
+  }
+  save();
 });
-$('title').addEventListener('blur', saveState);
+$('title').addEventListener('blur', save);
 $('title').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); $('title').blur(); }
 });
 
 document.querySelectorAll('[data-preset]').forEach((btn) => {
   btn.addEventListener('click', () => {
-    const mins = Number(btn.dataset.preset);
-    const base = targetMs ?? Date.now();
-    setTarget(base + mins * 60000);
+    const sel = selected();
+    if (!sel) return;
+    const base = sel.targetMs ?? Date.now();
+    setTargetForSelected(base + Number(btn.dataset.preset) * 60000);
   });
 });
 
-// In the desktop (Tauri) build, open the credit link in the system browser
-// instead of navigating the app's own chromeless webview. A plain browser has
-// no window.__TAURI__, so it falls through to the normal <a target="_blank">.
+$('addTimer').addEventListener('click', addTimer);
+
+$('timerList').addEventListener('click', (e) => {
+  const li = e.target.closest('.timer-item');
+  if (!li) return;
+  if (e.target.closest('.ti-del')) deleteTimer(li.dataset.id);
+  else selectTimer(li.dataset.id);
+});
+
+// Desktop (Tauri): open the credit link in the system browser. A plain browser
+// has no window.__TAURI__, so it falls through to the normal <a target="_blank">.
 const creditLink = document.querySelector('.credit a');
 if (creditLink && window.__TAURI__ && window.__TAURI__.opener) {
   creditLink.addEventListener('click', (e) => {
@@ -343,7 +462,7 @@ async function checkForUpdates(manual) {
   }
 })();
 
-// Particles
+// ---------- particles ----------
 (function createParticles() {
   const container = $('particles');
   for (let i = 0; i < 40; i++) {
@@ -357,14 +476,11 @@ async function checkForUpdates(manual) {
   }
 })();
 
-// Init
+// ---------- init ----------
 populateSelectOptions();
-loadState();
-if (targetMs == null) {
-  writeMsToInputs(Date.now());
-  updateMeta();
-  render();
-} else {
-  setTarget(targetMs, { sync: false });
-}
-setInterval(updateMeta, 1000);
+load();
+const initSel = selected();
+$('title').textContent = initSel.title || '';
+writeMsToInputs(initSel.targetMs ?? Date.now());
+renderSidebar();
+startLoop();
