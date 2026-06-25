@@ -35,19 +35,56 @@ body {
   scrollbar-width: none;
 }
 
-/* Right sidebar: the list of timers + the update check. */
+/* Right sidebar: a slide-in drawer (toggled by the list button), overlaying the
+   right edge so it never squeezes the main timer. */
 .sidebar {
-  flex: 0 0 200px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 220px;
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 1rem 0.8rem;
-  background: rgba(255, 255, 255, 0.04);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
+  padding: 3rem 0.8rem 1rem;
+  background: rgba(26, 21, 69, 0.92);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
   overflow-y: auto;
   scrollbar-width: none;
-  z-index: 2;
+  z-index: 9;
+}
+
+body.sidebar-open .sidebar { transform: translateX(0); }
+
+/* The list toggle button (top-right). Doubles as the close button when open. */
+#sidebarToggle {
+  position: fixed;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 11;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+#sidebarToggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 .sidebar-head {
@@ -531,9 +568,10 @@ button.ghost:hover {
   html, body { overflow: auto; }
 }
 
-/* Hide the timers sidebar when the window is short or narrow; the selected
-   timer then uses the full window (matching the compact "glance" mode). */
-@media (max-height: 440px), (max-width: 679px) {
+/* In compact (short) mode, drop the timer list and its toggle entirely so the
+   glance view stays minimal. */
+@media (max-height: 440px) {
+  #sidebarToggle,
   .sidebar { display: none; }
 }
 

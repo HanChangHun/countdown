@@ -400,6 +400,19 @@ $('timerList').addEventListener('click', (e) => {
   else selectTimer(li.dataset.id);
 });
 
+// Sidebar drawer toggle — closed by default, remembers your choice.
+const SIDEBAR_KEY = 'ch-countdown:sidebar';
+function setSidebar(open) {
+  document.body.classList.toggle('sidebar-open', open);
+  const btn = $('sidebarToggle');
+  btn.textContent = open ? '✕' : '☰';
+  btn.title = open ? 'Close timer list' : 'Timers';
+  try { localStorage.setItem(SIDEBAR_KEY, open ? '1' : '0'); } catch (e) { /* ignore */ }
+}
+$('sidebarToggle').addEventListener('click', () => {
+  setSidebar(!document.body.classList.contains('sidebar-open'));
+});
+
 // Desktop (Tauri): open the credit link in the system browser. A plain browser
 // has no window.__TAURI__, so it falls through to the normal <a target="_blank">.
 const creditLink = document.querySelector('.credit a');
@@ -483,4 +496,10 @@ const initSel = selected();
 $('title').textContent = initSel.title || '';
 writeMsToInputs(initSel.targetMs ?? Date.now());
 renderSidebar();
+
+let sbOpen = false;
+try { sbOpen = localStorage.getItem(SIDEBAR_KEY) === '1'; } catch (e) { /* ignore */ }
+if (new URLSearchParams(location.search).get('sb') === '1') sbOpen = true;
+setSidebar(sbOpen);
+
 startLoop();
