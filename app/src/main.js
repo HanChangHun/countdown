@@ -320,8 +320,9 @@ function selectTimer(id) {
 function setTargetForSelected(ms) {
   const sel = selected();
   if (!sel) return;
-  // Truncate to the minute so the controls and the stored target always agree.
-  sel.targetMs = Math.floor(ms / 60000) * 60000;
+  // Keep full precision so a preset adds its exact delta (e.g. +5 min off "now"
+  // stays a full 5:00 instead of losing the current seconds).
+  sel.targetMs = ms;
   writeMsToInputs(sel.targetMs);
   save();
   renderMain();
@@ -351,7 +352,16 @@ function deleteTimer(id) {
 // ---------- event wiring ----------
 $('setBtn').addEventListener('click', () => {
   const ms = readInputsToMs();
-  if (ms != null) setTargetForSelected(ms);
+  if (ms == null) return;
+  const sel = selected();
+  // Pressing Set without changing the controls (same minute as the current
+  // target) keeps the exact existing target, so seconds set by a preset aren't
+  // silently zeroed.
+  if (sel && sel.targetMs != null
+      && Math.floor(sel.targetMs / 60000) === Math.floor(ms / 60000)) {
+    return;
+  }
+  setTargetForSelected(ms);
 });
 
 $('resetBtn').addEventListener('click', () => {
