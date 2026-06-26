@@ -392,6 +392,10 @@ $('title').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); $('title').blur(); }
 });
 
+$('pomodoroBtn').addEventListener('click', () => {
+  setTargetForSelected(Date.now() + 25 * 60000);   // a 25-minute Pomodoro
+});
+
 document.querySelectorAll('[data-preset]').forEach((btn) => {
   btn.addEventListener('click', () => {
     const sel = selected();
