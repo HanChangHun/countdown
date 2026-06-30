@@ -4,7 +4,7 @@
 
 <img src="assets/favicon.svg" width="110" alt="Countdown icon">
 
-[![Live](https://img.shields.io/badge/Web-Live-22c55e?style=for-the-badge)](https://hanchanghun.github.io/countdown-web/)
+[![Live](https://img.shields.io/badge/Web-Live-22c55e?style=for-the-badge)](https://hanchanghun.github.io/countdown/)
 [![Windows](https://img.shields.io/badge/Desktop-Windows%2010%2B-blue?style=for-the-badge)](https://www.microsoft.com/windows)
 [![Tauri](https://img.shields.io/badge/Tauri-2-FFC131?style=for-the-badge)](https://tauri.app)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
@@ -20,7 +20,7 @@ Pick a target time and it counts down; once the target passes it flips to a "sta
 
 | | Where | Best for | Highlights |
 |---|---|---|---|
-| 🌐 **Web** | [the live page](https://hanchanghun.github.io/countdown-web/) (or `index.html`) | a quick countdown, sharing | **shareable URLs** — the address bar auto-updates so you can copy a preconfigured countdown |
+| 🌐 **Web** | [the live page](https://hanchanghun.github.io/countdown/) (or `index.html`) | a quick countdown, sharing | **shareable URLs** — the address bar auto-updates so you can copy a preconfigured countdown |
 | 🖥️ **Desktop** | the Tauri app in [`app/`](app/) | keeping one pinned on your desktop | a **resizable native window** + a **compact "glance" mode** when you shrink it |
 
 The two share the same look but are currently **separate front-ends** (see [Repo layout](#repo-layout)): the web version owns shareable URLs; the desktop version owns the native window and compact mode.
@@ -29,14 +29,14 @@ The two share the same look but are currently **separate front-ends** (see [Repo
 
 ## 🌐 Web version
 
-Open [the live page](https://hanchanghun.github.io/countdown-web/), or clone and open `index.html` locally. No build step, no dependencies.
+Open [the live page](https://hanchanghun.github.io/countdown/), or clone and open `index.html` locally. No build step, no dependencies.
 
 ### Sharing a countdown
 
 Set your target and title — the URL in your address bar updates automatically. Copy and send it.
 
 ```
-https://hanchanghun.github.io/countdown-web/?at=2027-01-01T00:00&title=New+Year
+https://hanchanghun.github.io/countdown/?at=2027-01-01T00:00&title=New+Year
 ```
 
 - `at` — target time in local ISO format (`YYYY-MM-DDTHH:MM`), interpreted in the viewer's local timezone

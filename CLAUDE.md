@@ -38,11 +38,26 @@ Build outputs:
 
 ## Releasing
 
-No CI / signing / auto-updater (this is a personal tool). To cut a version, bump it in the three files and keep them in sync, then build:
+No CI — versions are built and published locally. The desktop app **does** ship a **signed auto-updater**: `tauri.conf.json` sets `createUpdaterArtifacts: true` and an `updater` plugin that polls this repo's GitHub Releases (`…/releases/latest/download/latest.json`), verified against the bundled `pubkey`. Installed apps update passively. The signing key lives at `~/.tauri/countdown-updater.key` (no password).
 
-- `app/package.json`
-- `app/src-tauri/tauri.conf.json`
-- `app/src-tauri/Cargo.toml`
+To cut a version:
+
+1. Bump the version in all three files, kept in sync:
+   - `app/package.json`
+   - `app/src-tauri/tauri.conf.json`
+   - `app/src-tauri/Cargo.toml`
+2. Build the signed artifacts:
+   ```bash
+   cd app
+   export TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/countdown-updater.key)"
+   export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
+   npm run tauri build
+   ```
+   → `…/target/release/bundle/nsis/Countdown_<version>_x64-setup.exe` and its `.sig`.
+3. Commit `v<version>: <summary>`, then publish a GitHub Release tagged `v<version>` with three assets so the updater can find the build:
+   - `Countdown_<version>_x64-setup.exe`
+   - `Countdown_<version>_x64-setup.exe.sig`
+   - `latest.json` — `{ version, notes, pub_date, platforms."windows-x86_64".{ signature: <.sig contents>, url } }`
 
 ## Conventions
 

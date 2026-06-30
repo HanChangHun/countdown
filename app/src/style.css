@@ -383,6 +383,68 @@ h1:focus:empty::before { opacity: 0.6; }
   color: rgba(255, 255, 255, 0.55);
 }
 
+/* Daily Pomodoro pile — a quiet, semi-transparent stack of 🍅 tucked into the
+   bottom-right corner. Each finished 25-min session adds one; click a 🍅 to
+   remove it. Shows only while the selected timer is named "Pomodoro"; the count
+   resets each calendar day. */
+.pomo-pile {
+  position: fixed;
+  right: clamp(8px, 1.4vw, 18px);
+  bottom: clamp(8px, 1.4vh, 16px);
+  z-index: 8;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: clamp(0.05rem, 0.3vw, 0.22rem);
+  max-width: clamp(92px, 13vw, 168px);
+  opacity: 0.42;                 /* "몰래": barely-there until you look at it */
+  transition: opacity 0.3s ease;
+}
+
+.pomo-pile:hover { opacity: 0.95; }
+
+.pomo-pile[hidden] { display: none; }
+
+.pomo-t {
+  font-size: clamp(0.85rem, 1.6vw, 1.25rem);
+  line-height: 1;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+  transition: transform 0.15s ease;
+}
+
+.pomo-t:hover { transform: scale(1.2) rotate(-6deg); }
+
+.pomo-t.pop {
+  animation: pomoPop 0.5s cubic-bezier(0.18, 1.4, 0.4, 1);
+  transform-origin: bottom center;
+}
+
+.pomo-t.leaving {
+  animation: pomoLeave 0.2s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes pomoPop {
+  0%   { transform: scale(0) translateY(8px);     opacity: 0; }
+  60%  { transform: scale(1.25) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0);       opacity: 1; }
+}
+
+@keyframes pomoLeave {
+  to { transform: scale(0) translateY(6px); opacity: 0; }
+}
+
+.pomo-more {
+  align-self: flex-end;
+  font-size: clamp(0.62rem, 0.9vw, 0.8rem);
+  color: rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+  margin-left: 0.1rem;
+}
+
 .controls {
   display: flex;
   justify-content: center;
@@ -615,4 +677,8 @@ button.ghost:hover {
   .countdown { min-height: 0; margin-bottom: clamp(0.5rem, 2vh, 1rem); }
   .preset-row { order: 1; margin-top: clamp(0.4rem, 1.5vh, 0.9rem); }
   .controls { order: 2; margin-top: clamp(0.5rem, 2vh, 1rem); }
+
+  /* the 🍅 pile is a fixed corner overlay; keep it small in the glance view */
+  .pomo-pile { max-width: clamp(78px, 30vw, 120px); right: 6px; bottom: 6px; }
+  .pomo-t { font-size: clamp(0.8rem, 4vw, 1rem); }
 }

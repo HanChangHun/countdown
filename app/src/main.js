@@ -8,6 +8,10 @@ let timers = [];
 let selectedId = null;
 let timerId = null;
 
+// Daily Pomodoro pile — completed 25-min sessions, counted per calendar day.
+const POMO_KEY = 'ch-countdown:pomo';
+let pomo = { date: '', count: 0, armId: null, armTarget: null };
+
 const $ = (id) => document.getElementById(id);
 
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -189,6 +193,95 @@ function load() {
   if (title != null) sel.title = title.trim();
 }
 
+// ---------- daily Pomodoro pile ----------
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function loadPomo() {
+  try {
+    const raw = localStorage.getItem(POMO_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      pomo = {
+        date: typeof s.date === 'string' ? s.date : '',
+        count: Number.isFinite(s.count) ? s.count : 0,
+        armId: typeof s.armId === 'string' ? s.armId : null,
+        armTarget: Number.isFinite(s.armTarget) ? s.armTarget : null,
+      };
+    }
+  } catch (e) { /* ignore */ }
+  ensurePomoToday();
+}
+
+function savePomo() {
+  try { localStorage.setItem(POMO_KEY, JSON.stringify(pomo)); } catch (e) { /* ignore */ }
+}
+
+// Roll the pile over at midnight: a new calendar day starts the count fresh.
+function ensurePomoToday() {
+  const t = todayStr();
+  if (pomo.date !== t) { pomo.date = t; pomo.count = 0; savePomo(); }
+}
+
+function isPomodoroTimer(t) {
+  return !!t && t.title.trim().toLowerCase() === 'pomodoro';
+}
+
+// Watch one timer's exact target; when it lands, a 🍅 joins today's pile.
+function armPomodoro(id, target) {
+  pomo.armId = id;
+  pomo.armTarget = target;
+  savePomo();
+}
+
+// Called each tick. Grows a 🍅 when the armed Pomodoro finishes; disarms quietly
+// if the watched timer was retargeted, renamed out of Pomodoro, or removed.
+function harvestPomodoro() {
+  if (pomo.armId == null) return false;
+  const t = timers.find((x) => x.id === pomo.armId);
+  if (!t || t.targetMs !== pomo.armTarget || !isPomodoroTimer(t)) {
+    pomo.armId = null; pomo.armTarget = null; savePomo();
+    return false;
+  }
+  if (Date.now() < pomo.armTarget) return false;
+  ensurePomoToday();
+  pomo.count += 1;
+  pomo.armId = null; pomo.armTarget = null;
+  savePomo();
+  return true;
+}
+
+const POMO_MAX_GLYPHS = 30;   // cap the rendered emoji; show "+N" beyond it
+
+// The pile shows only for a timer literally titled "Pomodoro". justGrew pops the
+// newest 🍅. A signature guard skips redundant re-renders on the 1 Hz tick.
+function renderPomoPile(justGrew) {
+  const pile = $('pomoPile');
+  if (!pile) return;
+  ensurePomoToday();
+  const show = isPomodoroTimer(selected());
+  pile.hidden = !show;
+  if (!show) { pile.dataset.sig = ''; return; }
+
+  const sig = `${pomo.date}:${pomo.count}`;
+  if (!justGrew && pile.dataset.sig === sig) return;
+  pile.dataset.sig = sig;
+
+  const n = Math.min(pomo.count, POMO_MAX_GLYPHS);
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    const pop = justGrew && i === n - 1 ? ' pop' : '';
+    html += `<span class="pomo-t${pop}" title="click to remove">🍅</span>`;
+  }
+  if (pomo.count > POMO_MAX_GLYPHS) {
+    html += `<span class="pomo-more">+${pomo.count - POMO_MAX_GLYPHS}</span>`;
+  }
+  pile.innerHTML = html;
+  pile.title = pomo.count > 0 ? `${pomo.count} today — click a 🍅 to remove` : '';
+}
+
 // ---------- main view ----------
 const ACTIVE_HTML = `
   <div class="unit"><div class="number" id="days">--</div><div class="label">Days</div></div>
@@ -295,7 +388,9 @@ function updateSidebarTimes() {
 
 // ---------- loop (1 Hz, always running) ----------
 function tick() {
+  const grew = harvestPomodoro();
   renderMain();
+  renderPomoPile(grew);
   updateSidebarTimes();
   timerId = setTimeout(tick, 1000 - (Date.now() % 1000));
 }
@@ -315,6 +410,7 @@ function selectTimer(id) {
   save();
   renderMain();
   renderSidebar();
+  renderPomoPile(false);
 }
 
 function setTargetForSelected(ms) {
@@ -347,6 +443,7 @@ function deleteTimer(id) {
   save();
   renderMain();
   renderSidebar();
+  renderPomoPile(false);
 }
 
 // ---------- event wiring ----------
@@ -386,6 +483,7 @@ $('title').addEventListener('input', () => {
     }
   }
   save();
+  renderPomoPile(false);   // typing "Pomodoro" reveals the pile; editing it away hides it
 });
 $('title').addEventListener('blur', save);
 $('title').addEventListener('keydown', (e) => {
@@ -393,7 +491,30 @@ $('title').addEventListener('keydown', (e) => {
 });
 
 $('pomodoroBtn').addEventListener('click', () => {
-  setTargetForSelected(Date.now() + 25 * 60000);   // a 25-minute Pomodoro
+  const sel = selected();
+  if (!sel) return;
+  // The 🍅 button enters Pomodoro mode: name the timer so the daily pile shows,
+  // run a 25-minute session, and watch its target to grow a 🍅 when it lands.
+  if (!isPomodoroTimer(sel)) {
+    sel.title = 'Pomodoro';
+    $('title').textContent = 'Pomodoro';
+  }
+  const target = Date.now() + 25 * 60000;
+  setTargetForSelected(target);
+  armPomodoro(sel.id, target);
+  renderPomoPile(false);
+});
+
+// Click a 🍅 to drop it from today's pile — a quick fade, then the count falls.
+$('pomoPile').addEventListener('click', (e) => {
+  const t = e.target.closest('.pomo-t');
+  if (!t || t.classList.contains('leaving')) return;
+  t.classList.add('leaving');
+  setTimeout(() => {
+    if (pomo.count > 0) pomo.count -= 1;
+    savePomo();
+    renderPomoPile(false);
+  }, 200);
 });
 
 document.querySelectorAll('[data-preset]').forEach((btn) => {
@@ -506,6 +627,7 @@ async function checkForUpdates(manual) {
 // ---------- init ----------
 populateSelectOptions();
 load();
+loadPomo();
 const initSel = selected();
 $('title').textContent = initSel.title || '';
 writeMsToInputs(initSel.targetMs ?? Date.now());
