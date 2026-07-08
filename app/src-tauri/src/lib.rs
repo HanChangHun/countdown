@@ -16,6 +16,27 @@ pub fn run() {
         // Secure auto-update (signed GitHub releases) + relaunch after install.
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .setup(|_app| {
+            std::thread::spawn(cleanup_stale_updater_temp_dirs);
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running countdown application");
+}
+
+// Tauri's NSIS updater extracts each update into %TEMP% and never removes it
+// afterward (tauri-apps/tauri#11862, unfixed upstream), so every update leaves
+// a few MB behind. By the time this runs, any update that led to the current
+// launch has already finished, so every matching folder here is stale.
+fn cleanup_stale_updater_temp_dirs() {
+    let Ok(entries) = std::fs::read_dir(std::env::temp_dir()) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with("Countdown-") && name.contains("-updater-") && entry.path().is_dir() {
+            let _ = std::fs::remove_dir_all(entry.path());
+        }
+    }
 }
