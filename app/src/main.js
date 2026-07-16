@@ -639,3 +639,16 @@ if (new URLSearchParams(location.search).get('sb') === '1') sbOpen = true;
 setSidebar(sbOpen);
 
 startLoop();
+
+// ---- Custom titlebar (frameless Tauri window) -------------------------
+(() => {
+  const bar = document.getElementById('titlebar');
+  if (!bar) return;
+  if (!window.__TAURI__?.window) {
+    document.body.classList.add('no-titlebar'); // 웹으로 열면 숨김
+    return;
+  }
+  const appWindow = window.__TAURI__.window.getCurrentWindow();
+  document.getElementById('winMinBtn').addEventListener('click', () => appWindow.minimize());
+  document.getElementById('winCloseBtn').addEventListener('click', () => appWindow.close());
+})();

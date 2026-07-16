@@ -5,8 +5,10 @@ pub fn run() {
     // Persist the window size (but NOT its position) so a remembered window can
     // never be restored off-screen after a monitor is disconnected/rearranged —
     // it always reopens centered (tauri.conf `center: true`) at the saved size.
+    // DECORATIONS is also excluded: the frameless custom titlebar must not be
+    // overridden by a previously saved `decorated: true` state.
     let window_state = tauri_plugin_window_state::Builder::default()
-        .with_state_flags(StateFlags::all() & !StateFlags::POSITION)
+        .with_state_flags(StateFlags::all() & !(StateFlags::POSITION | StateFlags::DECORATIONS))
         .build();
 
     tauri::Builder::default()

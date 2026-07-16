@@ -9,6 +9,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="titlebar" id="titlebar" data-tauri-drag-region>
+    <img class="tb-mark" src="favicon.svg" alt="" data-tauri-drag-region>
+    <span class="tb-title" data-tauri-drag-region>Countdown</span>
+    <button class="win-btn" id="winMinBtn" type="button" title="Minimize" aria-label="Minimize">─</button>
+    <button class="win-btn close" id="winCloseBtn" type="button" title="Close" aria-label="Close">✕</button>
+  </header>
   <div class="bg"></div>
   <div class="particles" id="particles"></div>
 

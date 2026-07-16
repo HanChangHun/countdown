@@ -39,7 +39,7 @@ body {
    right edge so it never squeezes the main timer. */
 .sidebar {
   position: fixed;
-  top: 0;
+  top: var(--titlebar-h, 0px);
   right: 0;
   bottom: 0;
   width: 220px;
@@ -62,7 +62,7 @@ body.sidebar-open .sidebar { transform: translateX(0); }
 /* The list toggle button (top-right). Doubles as the close button when open. */
 #sidebarToggle {
   position: fixed;
-  top: 0.6rem;
+  top: calc(var(--titlebar-h, 0px) + 0.6rem);
   right: 0.6rem;
   z-index: 11;
   width: 2.1rem;
@@ -608,7 +608,7 @@ button.ghost:hover {
 
 .update-banner {
   position: fixed;
-  top: 0;
+  top: var(--titlebar-h, 0px); /* 커스텀 타이틀바 아래에 표시 */
   left: 0;
   right: 0;
   z-index: 10;
@@ -682,3 +682,57 @@ button.ghost:hover {
   .pomo-pile { max-width: clamp(78px, 30vw, 120px); right: 6px; bottom: 6px; }
   .pomo-t { font-size: clamp(0.8rem, 4vw, 1rem); }
 }
+
+/* ---- Custom titlebar (frameless Tauri window) ------------------------- */
+:root { --titlebar-h: 38px; }
+
+.titlebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--titlebar-h);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0.3rem 0 0.85rem;
+  background: rgba(15, 12, 41, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(14px);
+  z-index: 20;
+}
+
+.titlebar .tb-mark { width: 15px; height: 15px; opacity: 0.9; }
+
+.titlebar .tb-title {
+  flex: 1;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;   /* UPCOMING 배지·TARGET 라벨과 같은 타이포 언어 */
+  letter-spacing: 2px;
+  color: rgba(230, 220, 255, 0.55);
+}
+
+.win-btn {
+  width: 40px;
+  height: 29px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.win-btn:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.win-btn.close:hover { background: rgba(225, 29, 72, 0.85); color: #fff; }
+
+body { box-sizing: border-box; padding-top: var(--titlebar-h); }
+
+/* 브라우저(웹)로 열었을 때: 타이틀바 숨김 */
+body.no-titlebar { padding-top: 0; }
+body.no-titlebar .titlebar { display: none; }
+
+/* 웹(비 Tauri)에서는 타이틀바가 없으므로 배너를 원위치로 */
+body.no-titlebar .update-banner { top: 0; }
