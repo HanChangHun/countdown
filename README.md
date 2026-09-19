@@ -54,8 +54,9 @@ A [Tauri 2](https://tauri.app) build (Rust shell + system WebView2) that gives t
 - **Resizable** — drag it to any size; the layout scales (the four boxes stay on one row).
 - **Compact "glance" mode** — shrink the height and the setup chrome drops away, leaving just the title, target, countdown, the ±5 / ±15 min pills, and a Reset. Set the target at a normal size, then shrink to monitor.
 - **Remembers its size and position** — reopens where you left it; if that spot is no longer on a connected monitor it opens centered instead.
-- **Single instance** — launching it again just brings the open window to the front.
-- **Start with Windows** — a toggle at the bottom of the timer sidebar (☰), off by default.
+- **Lives in the system tray** — closing the window (✕) hides it to the tray; timers keep running and time's-up notifications still fire. Left-click the tray icon, pick **Open** from its menu, or launch the app again to bring it back. **Quit** is in the tray menu.
+- **Single instance** — launching it again just brings the open window back.
+- **Start with Windows** — a toggle in the tray menu and at the bottom of the timer sidebar (☰), off by default.
 - **Opens the credit link in your browser** (not inside the app window).
 
 ### Build

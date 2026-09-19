@@ -653,23 +653,25 @@ async function checkForUpdates(manual) {
 })();
 
 // ---------- start with Windows (desktop / Tauri only) ----------
-// The autostart plugin's own JS API (window.__TAURI__.autostart) writes the
-// HKCU Run key; the row stays hidden in the plain-browser web build.
+// Backed by Rust commands so the tray menu's check item and this checkbox
+// stay in sync whichever side toggles; the row stays hidden in the web build.
 (async function initAutostart() {
   const row = $('autostartRow');
-  const api = window.__TAURI__ && window.__TAURI__.autostart;
-  if (!row || !api) return;
+  const core = window.__TAURI__ && window.__TAURI__.core;
+  if (!row || !core) return;
   const box = $('autostartToggle');
-  try { box.checked = await api.isEnabled(); } catch (e) { return; }
+  try { box.checked = !!(await core.invoke('is_autostart_enabled')); } catch (e) { return; }
   row.hidden = false;
   box.addEventListener('change', async () => {
     try {
-      if (box.checked) await api.enable(); else await api.disable();
-      box.checked = await api.isEnabled();   // reflect what Windows actually recorded
+      // The command returns what Windows actually recorded.
+      box.checked = !!(await core.invoke('set_autostart_cmd', { enable: box.checked }));
     } catch (e) {
       box.checked = !box.checked;
     }
   });
+  // Toggled from the tray menu.
+  window.__TAURI__.event.listen('autostart-changed', (e) => { box.checked = !!e.payload; });
 })();
 
 // ---------- particles ----------
