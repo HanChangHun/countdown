@@ -652,6 +652,26 @@ async function checkForUpdates(manual) {
   }
 })();
 
+// ---------- start with Windows (desktop / Tauri only) ----------
+// The autostart plugin's own JS API (window.__TAURI__.autostart) writes the
+// HKCU Run key; the row stays hidden in the plain-browser web build.
+(async function initAutostart() {
+  const row = $('autostartRow');
+  const api = window.__TAURI__ && window.__TAURI__.autostart;
+  if (!row || !api) return;
+  const box = $('autostartToggle');
+  try { box.checked = await api.isEnabled(); } catch (e) { return; }
+  row.hidden = false;
+  box.addEventListener('change', async () => {
+    try {
+      if (box.checked) await api.enable(); else await api.disable();
+      box.checked = await api.isEnabled();   // reflect what Windows actually recorded
+    } catch (e) {
+      box.checked = !box.checked;
+    }
+  });
+})();
+
 // ---------- particles ----------
 (function createParticles() {
   const container = $('particles');

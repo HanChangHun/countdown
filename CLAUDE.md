@@ -14,8 +14,8 @@ Ships two ways as **two separate front-ends** (they share the design but have di
 ## Layout
 
 - **`app/`** — the Tauri desktop app; all desktop development happens here.
-  - `app/src/` — frontend: `index.html`, `style.css`, `main.js`, `favicon.svg`. **Plain vanilla JS, no bundler/build step** — `frontendDist` points at this raw folder, so edits show up on reload. The only Tauri call is opening the credit link via `window.__TAURI__.opener.openUrl` (`withGlobalTauri: true` + `opener:allow-open-url`); everything else is plain browser JS. The short-window "glance" mode is a `@media (max-height: 440px)` block in `style.css`.
-  - `app/src-tauri/src/main.rs` + `lib.rs` — the Rust shell. `main.rs` calls `countdown_app_lib::run()`; `lib.rs` registers `tauri-plugin-window-state` (size only — **not** position, so it can't restore off-screen) and `tauri-plugin-opener`.
+  - `app/src/` — frontend: `index.html`, `style.css`, `main.js`, `favicon.svg`. **Plain vanilla JS, no bundler/build step** — `frontendDist` points at this raw folder, so edits show up on reload. Tauri calls go through the `window.__TAURI__` globals (`withGlobalTauri: true`): the titlebar window controls, the credit link (`opener`), the updater, the time's-up notification, and the sidebar's "start with Windows" toggle (`autostart`); everything else is plain browser JS. The short-window "glance" mode is a `@media (max-height: 440px)` block in `style.css`.
+  - `app/src-tauri/src/main.rs` + `lib.rs` — the Rust shell. `main.rs` calls `countdown_app_lib::run()`; `lib.rs` registers, in order, `tauri-plugin-single-instance` (first, so a second launch exits and just focuses the running window), `tauri-plugin-window-state` (size **and** position — the plugin skips a saved position that is off every connected monitor, so it falls back to centered; the window is declared `visible: false` in `tauri.conf.json` and shown in `setup` after the saved geometry is applied, and the state is also saved on focus loss since a long-running widget rarely exits cleanly), `tauri-plugin-autostart` (the sidebar toggle calls `window.__TAURI__.autostart` directly), plus `opener`, `updater`, `process`, and `notification`.
   - `app/src-tauri/tauri.conf.json` — window size, a strict local-only CSP, `withGlobalTauri`, bundle target (NSIS), icons.
   - `app/src-tauri/capabilities/default.json` — permission allowlist for the main window.
 - **`index.html` (repo root) + `assets/`** — the **web** version, deployed to GitHub Pages. It has its own evolution (shareable `?at=` URLs, ISO timestamps) and is **not** a copy of `app/src/` — the two front-ends diverged. Port features between them deliberately; there is no auto-sync.
@@ -32,6 +32,8 @@ npm run tauri build    # release build -> src-tauri/target/release/
 
 Requires Rust 1.77+ (MSVC toolchain), Node 20+, and Visual Studio Build Tools with the **Desktop development with C++** workload. WebView2 ships with Windows 10/11. There is no frontend build — edit `app/src/*` directly.
 
+The app is single-instance and dev/release builds share the same identifier, so quit the installed copy before `npm run tauri dev`, or the dev build will just focus it and exit. Window size/position persist in `%APPDATA%\io.github.hanchanghun.countdown\.window-state.json`; delete that file to reset.
+
 Build outputs:
 - Portable exe: `app/src-tauri/target/release/countdown-app.exe` (runs standalone; WebView2 is system-provided).
 - Installer: `app/src-tauri/target/release/bundle/nsis/Countdown_<version>_x64-setup.exe`.
@@ -43,9 +45,9 @@ No CI — versions are built and published locally. The desktop app **does** shi
 To cut a version:
 
 1. Bump the version in all three files, kept in sync:
-   - `app/package.json`
+   - `app/package.json` (then `npm install` in `app/` so `package-lock.json` follows)
    - `app/src-tauri/tauri.conf.json`
-   - `app/src-tauri/Cargo.toml`
+   - `app/src-tauri/Cargo.toml` (the `countdown-app` entry in `Cargo.lock` follows on the next build)
 2. Build the signed artifacts:
    ```bash
    cd app

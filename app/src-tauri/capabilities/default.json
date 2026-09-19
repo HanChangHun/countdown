@@ -10,6 +10,7 @@
     "core:window:allow-close",
     "core:window:allow-set-always-on-top",
     "notification:default",
+    "autostart:default",
     "opener:allow-open-url",
     "updater:default",
     "updater:allow-check",
