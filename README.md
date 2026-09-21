@@ -88,3 +88,9 @@ Outputs:
 ## 📝 License
 
 [MIT](LICENSE) © 2026 [HanChangHun](https://github.com/HanChangHun)
+
+## 0.2.1
+
+- Desktop windows now shrink to 280px wide (previously 360px).
+- Text and spacing scale smoothly below 360px, with readable control labels and compact preset rows.
+- Long titles wrap within the window; Korean words stay together where space permits.
