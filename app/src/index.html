@@ -22,6 +22,7 @@
   <button id="sidebarToggle" type="button" title="Timers" aria-label="Toggle timer list">☰</button>
 
   <main class="main">
+  <div class="timer-stage">
   <div class="container">
     <div class="timer-display">
     <div class="badge" id="badge">UPCOMING</div>
@@ -71,13 +72,12 @@
     </div>
     </div>
 
-    <section class="pomo-shelf" id="pomoShelf" aria-label="Completed Pomodoros today" hidden>
-      <span class="pomo-summary">Today <span id="pomoCount">0</span></span>
-      <div class="pomo-pile" id="pomoPile"></div>
-    </section>
-
     <p class="credit">by <a href="https://github.com/HanChangHun" target="_blank" rel="noopener">HanChangHun</a></p>
   </div>
+  </div>
+  <section class="pomo-shelf" id="pomoShelf" aria-label="Completed Pomodoros today" hidden>
+    <div class="pomo-pile" id="pomoPile"></div>
+  </section>
   </main>
 
   <aside class="sidebar" id="sidebar">

@@ -20,13 +20,15 @@ controls have a 10px floor. Preset padding shrinks to 0.55rem per side. Editable
 Native minimum width: 280px; minimum height: 240px. Default size stays 760×640
 and saved window geometry is preserved. Rem-based spacing follows the root
 scale. Four timer units stay on one row; controls and preset pills may wrap.
-The 440px height breakpoint switches to the glance layout. Its bottom action
-row keeps ±5 min, Reset and Pomodoro visible even at the 240px minimum height;
-only the timer display scrolls when a long title needs more height. Compact
-title and number sizes also respond to height. The ±15 min presets are removed.
-Completed Pomodoros occupy their own 32px Today shelf below the controls.
-The shelf shows up to five tomatoes and a +N remainder, so it never grows
-over the timer or buttons. It stays reserved at zero while in Pomodoro mode.
+The 440px height breakpoint switches to the glance layout. Center the timer
+and its action row as one group, with a small gap between them; do not stretch
+that gap when the window grows. Only the display shrinks/scrolls for long titles
+so ±5 min, Reset and Pomodoro stay visible. Compact text also responds to height.
+Completed Pomodoros live in a separate 28px footer at the window's bottom edge
+at every height. Keep it borderless, without a Today label or visible total.
+Tomatoes sit at the far right with 0.3 opacity, brightening only on hover/focus.
+Show up to five and a +N remainder; reserve the same space at zero in Pomodoro
+mode so sessions never overlap the content or cause the timer to jump.
 
 ## 5. Components
 Existing shared primitives: `.unit` number/label glass tiles; primary, ghost

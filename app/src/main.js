@@ -278,7 +278,6 @@ function renderPomoPile(justGrew) {
   const sig = `${pomo.date}:${pomo.count}`;
   if (!justGrew && pile.dataset.sig === sig) return;
   pile.dataset.sig = sig;
-  $('pomoCount').textContent = String(pomo.count);
   shelf.setAttribute('aria-label', `${pomo.count} completed Pomodoros today`);
 
   const n = Math.min(pomo.count, POMO_MAX_GLYPHS);
@@ -290,7 +289,7 @@ function renderPomoPile(justGrew) {
   if (pomo.count > POMO_MAX_GLYPHS) {
     html += `<span class="pomo-more">+${pomo.count - POMO_MAX_GLYPHS}</span>`;
   }
-  pile.innerHTML = html || '<span class="pomo-empty">No sessions yet</span>';
+  pile.innerHTML = html;
 }
 
 // ---------- main view ----------
