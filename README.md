@@ -52,7 +52,7 @@ State also persists in `localStorage` across reloads.
 A [Tauri 2](https://tauri.app) build (Rust shell + system WebView2) that gives the same countdown its own window:
 
 - **Resizable** — drag it to any size; the layout scales (the four boxes stay on one row).
-- **Compact "glance" mode** — shrink the height and the setup chrome drops away, leaving just the title, target, countdown, the ±5 / ±15 min pills, and a Reset. Set the target at a normal size, then shrink to monitor.
+- **Compact "glance" mode** — shrink the height and the setup chrome drops away, leaving the title, target, and countdown above an always-visible row of ±5 min, Reset, and 🍅 buttons. Long titles scroll within the timer area. Set the target at a normal size, then shrink to monitor.
 - **Remembers its size and position** — reopens where you left it; if that spot is no longer on a connected monitor it opens centered instead.
 - **Lives in the system tray** — closing the window (✕) hides it to the tray; timers keep running and time's-up notifications still fire. Left-click the tray icon, pick **Open** from its menu, or launch the app again to bring it back. **Quit** is in the tray menu.
 - **Single instance** — launching it again just brings the open window back.
@@ -88,6 +88,12 @@ Outputs:
 ## 📝 License
 
 [MIT](LICENSE) © 2026 [HanChangHun](https://github.com/HanChangHun)
+
+## 0.2.2
+
+- Short windows keep ±5 min, Reset and Pomodoro in an always-visible bottom row.
+- Timer text and spacing adapt to the window height; long titles scroll above the buttons.
+- Removed the ±15 min presets.
 
 ## 0.2.1
 

@@ -13,6 +13,10 @@ Ships two ways as **two separate front-ends** (they share the design but have di
 
 ## Layout
 
+Compact mode uses `.timer-display` as the scrollable region and reserves a
+`.timer-actions` row for ±5 min, Reset and Pomodoro. Keep this row outside the
+scrolling area so controls remain visible at the 240px minimum window height.
+
 - **`app/`** — the Tauri desktop app; all desktop development happens here.
   - `app/src/` — frontend: `index.html`, `style.css`, `main.js`, `favicon.svg`. **Plain vanilla JS, no bundler/build step** — `frontendDist` points at this raw folder, so edits show up on reload. Tauri calls go through the `window.__TAURI__` globals (`withGlobalTauri: true`): the titlebar window controls, the credit link (`opener`), the updater, the time's-up notification, and the sidebar's "start with Windows" checkbox (the `set_autostart_cmd` / `is_autostart_enabled` commands plus the `autostart-changed` event); everything else is plain browser JS. The short-window "glance" mode is a `@media (max-height: 440px)` block in `style.css`.
   - `app/src-tauri/src/main.rs` + `lib.rs` — the Rust shell. `main.rs` calls `countdown_app_lib::run()`; `lib.rs` registers, in order, `tauri-plugin-single-instance` (first, so a second launch exits and just focuses the running window), `tauri-plugin-window-state` (size **and** position — the plugin skips a saved position that is off every connected monitor, so it falls back to centered; the window is declared `visible: false` in `tauri.conf.json` and shown in `setup` after the saved geometry is applied, and the state is also saved on focus loss since a long-running widget rarely exits cleanly), `tauri-plugin-autostart` (behind the two commands so the tray's check item and the sidebar checkbox stay in sync), plus `opener`, `updater`, `process`, and `notification`. It also builds the system tray (`tray-icon` feature): Open / Start with Windows / Quit, left-click opens the window, and `CloseRequested` hides the window instead of quitting, saving the window state first.

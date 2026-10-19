@@ -20,8 +20,10 @@ controls have a 10px floor. Preset padding shrinks to 0.55rem per side. Editable
 Native minimum width: 280px; minimum height: 240px. Default size stays 760×640
 and saved window geometry is preserved. Rem-based spacing follows the root
 scale. Four timer units stay on one row; controls and preset pills may wrap.
-The existing 440px height breakpoint retains the glance layout. Main content
-owns scrolling when a long title needs more height.
+The 440px height breakpoint switches to the glance layout. Its bottom action
+row keeps ±5 min, Reset and Pomodoro visible even at the 240px minimum height;
+only the timer display scrolls when a long title needs more height. Compact
+title and number sizes also respond to height. The ±15 min presets are removed.
 
 ## 5. Components
 Existing shared primitives: `.unit` number/label glass tiles; primary, ghost

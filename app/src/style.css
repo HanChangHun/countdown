@@ -661,18 +661,11 @@ button.ghost:hover {
   html, body { overflow: auto; }
 }
 
-/* In compact (short) mode, drop the timer list and its toggle entirely so the
-   glance view stays minimal. */
+/* Compact "glance" mode: reserve a bottom row for ±5, Reset and Pomodoro.
+   Only the timer display scrolls when a long title needs extra room. */
 @media (max-height: 440px) {
   #sidebarToggle,
-  .sidebar { display: none; }
-}
-
-/* Compact "glance" mode: when the window is short, drop the heavy setup chrome
-   (date/time picker, Set, badge, NOW clock, credit) but keep the name, the
-   TARGET line, the countdown, the fine ±5/±15 pills, and a quiet Reset footer —
-   enough to read, nudge, and clear the target without enlarging the window. */
-@media (max-height: 440px) {
+  .sidebar,
   .badge,
   .meta-now,
   .credit,
@@ -681,28 +674,75 @@ button.ghost:hover {
   /* from the full controls row, keep Reset + the Pomodoro button */
   .controls > :not(#resetBtn):not(#pomodoroBtn) { display: none; }
 
-  /* drop the coarse jumps; keep the fine ±5 / ±15 pills */
+  /* Keep only the fine ±5-minute adjustments in the compact action row. */
   .preset-row button[data-preset="-60"],
   .preset-row button[data-preset="60"],
   .preset-row button[data-preset="1440"] { display: none; }
 
-  /* stack vertically so Reset can sit as a quiet footer below the pills */
+  .main { overflow: hidden; }
+
   .container {
+    flex: 1 1 0;
+    min-height: 0;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .timer-display {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: clamp(0.5rem, 3vh, 1.2rem);
-    padding-bottom: clamp(0.5rem, 3vh, 1.2rem);
+    justify-content: safe center;
+    padding: 0.2rem;
   }
 
-  h1 { margin-bottom: clamp(0.2rem, 1.5vh, 0.6rem); }
-  .meta-target { margin-bottom: clamp(0.4rem, 1.5vh, 0.9rem); }
-  .countdown { min-height: 0; margin-bottom: clamp(0.5rem, 2vh, 1rem); }
-  .preset-row { order: 1; margin-top: clamp(0.4rem, 1.5vh, 0.9rem); }
-  .controls { order: 2; margin-top: clamp(0.5rem, 2vh, 1rem); }
+  .timer-display > * { flex-shrink: 0; }
 
-  /* the 🍅 pile is a fixed corner overlay; keep it small in the glance view */
-  .pomo-pile { max-width: clamp(78px, 30vw, 120px); right: 6px; bottom: 6px; }
+  h1 {
+    font-size: clamp(1.2rem, min(4vw, 9vh), 2.5rem);
+    margin-bottom: 0.2rem;
+  }
+  .meta-target { margin-bottom: 0.4rem; }
+  .countdown { min-height: 0; margin-bottom: 0; }
+  .unit { padding-block: clamp(0.35rem, 2vh, 0.75rem); }
+  .unit .number { font-size: clamp(1.3rem, min(7.5vw, 12vh), 3.6rem); }
+
+  .timer-actions {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .preset-row { order: 1; }
+  .controls { order: 2; }
+  .timer-actions .preset-row,
+  .timer-actions .controls {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    margin-top: 0;
+  }
+  .timer-actions button {
+    height: 2rem;
+    min-height: 28px;
+    padding: 0 0.65rem;
+    white-space: nowrap;
+  }
+  .timer-actions .pomodoro { width: 2rem; min-width: 28px; padding: 0; }
+  .timer-actions .ghost {
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+
+  /* Keep the completed-session pile above the action row. */
+  .pomo-pile { max-width: clamp(78px, 30vw, 120px); right: 6px; bottom: calc(max(2rem, 28px) + 1.5rem); }
   .pomo-t { font-size: clamp(0.8rem, 4vw, 1rem); }
 }
 

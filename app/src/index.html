@@ -23,6 +23,7 @@
 
   <main class="main">
   <div class="container">
+    <div class="timer-display">
     <div class="badge" id="badge">UPCOMING</div>
     <h1 id="title" contenteditable="plaintext-only" spellcheck="false" data-placeholder="Click to name" title="Click to rename">Meeting</h1>
     <p class="meta-target"><span class="meta-label">Target</span><span id="metaTarget">--</span></p>
@@ -47,6 +48,9 @@
       </div>
     </div>
 
+    </div>
+
+    <div class="timer-actions">
     <div class="controls">
       <input type="date" id="dateInput">
       <select id="hourInput" aria-label="Hour"></select>
@@ -56,16 +60,15 @@
       <select id="secondInput" aria-label="Second"></select>
       <button class="primary" id="setBtn">Set</button>
       <button class="ghost" id="resetBtn" title="Clear the target">Reset</button>
-      <button class="ghost pomodoro" id="pomodoroBtn" type="button" title="Start a 25-minute Pomodoro">🍅</button>
+      <button class="ghost pomodoro" id="pomodoroBtn" type="button" title="Start a 25-minute Pomodoro" aria-label="Start a 25-minute Pomodoro">🍅</button>
     </div>
     <div class="preset-row">
       <button data-preset="-60">−1 hour</button>
-      <button data-preset="-15">−15 min</button>
       <button data-preset="-5">−5 min</button>
       <button data-preset="5">+5 min</button>
-      <button data-preset="15">+15 min</button>
       <button data-preset="60">+1 hour</button>
       <button data-preset="1440">+1 day</button>
+    </div>
     </div>
 
     <p class="credit">by <a href="https://github.com/HanChangHun" target="_blank" rel="noopener">HanChangHun</a></p>
