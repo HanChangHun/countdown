@@ -89,6 +89,12 @@ Outputs:
 
 [MIT](LICENSE) © 2026 [HanChangHun](https://github.com/HanChangHun)
 
+## 0.2.3
+
+- Completed Pomodoros now have a dedicated Today row below the controls.
+- Show up to five tomatoes plus a +N remainder, keeping the timer unobstructed at any session count.
+- Preserve completed-session counts and support removing a tomato with the keyboard.
+
 ## 0.2.2
 
 - Short windows keep ±5 min, Reset and Pomodoro in an always-visible bottom row.

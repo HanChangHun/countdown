@@ -24,6 +24,9 @@ The 440px height breakpoint switches to the glance layout. Its bottom action
 row keeps ±5 min, Reset and Pomodoro visible even at the 240px minimum height;
 only the timer display scrolls when a long title needs more height. Compact
 title and number sizes also respond to height. The ±15 min presets are removed.
+Completed Pomodoros occupy their own 32px Today shelf below the controls.
+The shelf shows up to five tomatoes and a +N remainder, so it never grows
+over the timer or buttons. It stays reserved at zero while in Pomodoro mode.
 
 ## 5. Components
 Existing shared primitives: `.unit` number/label glass tiles; primary, ghost

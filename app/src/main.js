@@ -262,33 +262,35 @@ function harvestPomodoro() {
   return true;
 }
 
-const POMO_MAX_GLYPHS = 30;   // cap the rendered emoji; show "+N" beyond it
+const POMO_MAX_GLYPHS = 5;   // keep the shelf on one row; show "+N" beyond it
 
 // The pile shows only for a timer literally titled "Pomodoro". justGrew pops the
 // newest 🍅. A signature guard skips redundant re-renders on the 1 Hz tick.
 function renderPomoPile(justGrew) {
+  const shelf = $('pomoShelf');
   const pile = $('pomoPile');
-  if (!pile) return;
+  if (!shelf || !pile) return;
   ensurePomoToday();
   const show = isPomodoroTimer(selected());
-  pile.hidden = !show;
+  shelf.hidden = !show;
   if (!show) { pile.dataset.sig = ''; return; }
 
   const sig = `${pomo.date}:${pomo.count}`;
   if (!justGrew && pile.dataset.sig === sig) return;
   pile.dataset.sig = sig;
+  $('pomoCount').textContent = String(pomo.count);
+  shelf.setAttribute('aria-label', `${pomo.count} completed Pomodoros today`);
 
   const n = Math.min(pomo.count, POMO_MAX_GLYPHS);
   let html = '';
   for (let i = 0; i < n; i++) {
     const pop = justGrew && i === n - 1 ? ' pop' : '';
-    html += `<span class="pomo-t${pop}" title="click to remove">🍅</span>`;
+    html += `<button class="pomo-t${pop}" type="button" title="Remove one completed session" aria-label="Remove one completed Pomodoro">🍅</button>`;
   }
   if (pomo.count > POMO_MAX_GLYPHS) {
     html += `<span class="pomo-more">+${pomo.count - POMO_MAX_GLYPHS}</span>`;
   }
-  pile.innerHTML = html;
-  pile.title = pomo.count > 0 ? `${pomo.count} today — click a 🍅 to remove` : '';
+  pile.innerHTML = html || '<span class="pomo-empty">No sessions yet</span>';
 }
 
 // ---------- main view ----------

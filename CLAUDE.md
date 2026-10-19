@@ -16,6 +16,8 @@ Ships two ways as **two separate front-ends** (they share the design but have di
 Compact mode uses `.timer-display` as the scrollable region and reserves a
 `.timer-actions` row for ±5 min, Reset and Pomodoro. Keep this row outside the
 scrolling area so controls remain visible at the 240px minimum window height.
+The `.pomo-shelf` below the actions reserves 32px for today's completed sessions;
+render at most five tomatoes plus a remainder instead of overlaying the timer.
 
 - **`app/`** — the Tauri desktop app; all desktop development happens here.
   - `app/src/` — frontend: `index.html`, `style.css`, `main.js`, `favicon.svg`. **Plain vanilla JS, no bundler/build step** — `frontendDist` points at this raw folder, so edits show up on reload. Tauri calls go through the `window.__TAURI__` globals (`withGlobalTauri: true`): the titlebar window controls, the credit link (`opener`), the updater, the time's-up notification, and the sidebar's "start with Windows" checkbox (the `set_autostart_cmd` / `is_autostart_enabled` commands plus the `autostart-changed` event); everything else is plain browser JS. The short-window "glance" mode is a `@media (max-height: 440px)` block in `style.css`.

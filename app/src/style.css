@@ -406,39 +406,64 @@ h1:focus:empty::before { opacity: 0.6; }
   color: rgba(255, 255, 255, 0.55);
 }
 
-/* Daily Pomodoro pile — a quiet, semi-transparent stack of 🍅 tucked into the
-   bottom-right corner. Each finished 25-min session adds one; click a 🍅 to
-   remove it. Shows only while the selected timer is named "Pomodoro"; the count
-   resets each calendar day. */
-.pomo-pile {
-  position: fixed;
-  right: clamp(8px, 1.4vw, 18px);
-  bottom: clamp(8px, 1.4vh, 16px);
-  z-index: 8;
+/* Completed Pomodoros own a bounded row below the controls, never an overlay.
+   Keep the row's height stable as sessions accumulate or reset at midnight. */
+.pomo-shelf {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap-reverse;
-  justify-content: flex-end;
-  align-items: flex-end;
-  gap: clamp(0.05rem, 0.3vw, 0.22rem);
-  max-width: clamp(92px, 13vw, 168px);
-  opacity: 0.42;                 /* "몰래": barely-there until you look at it */
-  transition: opacity 0.3s ease;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: min(100%, 26rem);
+  min-width: 0;
+  height: 32px;
+  padding: 3px 0.6rem;
+  margin: 0.8rem auto 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(15, 12, 41, 0.2);
 }
 
-.pomo-pile:hover { opacity: 0.95; }
+.pomo-shelf[hidden] { display: none; }
 
-.pomo-pile[hidden] { display: none; }
+.pomo-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  font-size: max(10px, 0.7rem);
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+#pomoCount { color: rgba(255, 255, 255, 0.85); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.pomo-pile {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+  overflow: auto;
+}
 
 .pomo-t {
-  font-size: clamp(0.85rem, 1.6vw, 1.25rem);
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  backdrop-filter: none;
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
-  transition: transform 0.15s ease;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background 0.15s ease;
 }
 
-.pomo-t:hover { transform: scale(1.2) rotate(-6deg); }
+.pomo-t:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
+.pomo-t:focus-visible { outline-offset: -2px; opacity: 1; }
 
 .pomo-t.pop {
   animation: pomoPop 0.5s cubic-bezier(0.18, 1.4, 0.4, 1);
@@ -460,12 +485,12 @@ h1:focus:empty::before { opacity: 0.6; }
   to { transform: scale(0) translateY(6px); opacity: 0; }
 }
 
-.pomo-more {
-  align-self: flex-end;
-  font-size: clamp(0.62rem, 0.9vw, 0.8rem);
-  color: rgba(255, 255, 255, 0.7);
+.pomo-more, .pomo-empty {
+  flex: 0 0 auto;
+  font-size: max(10px, 0.7rem);
+  color: rgba(255, 255, 255, 0.5);
   font-variant-numeric: tabular-nums;
-  margin-left: 0.1rem;
+  white-space: nowrap;
 }
 
 .controls {
@@ -687,8 +712,8 @@ button.ghost:hover {
     max-width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 0.5rem;
-    gap: 0.5rem;
+    padding: 0.375rem;
+    gap: 0.25rem;
   }
 
   .timer-display {
@@ -699,19 +724,21 @@ button.ghost:hover {
     flex-direction: column;
     align-items: center;
     justify-content: safe center;
-    padding: 0.2rem;
+    padding: 0.15rem;
   }
 
   .timer-display > * { flex-shrink: 0; }
 
   h1 {
     font-size: clamp(1.2rem, min(4vw, 9vh), 2.5rem);
-    margin-bottom: 0.2rem;
+    line-height: 1.15;
+    margin-bottom: 0.1rem;
   }
-  .meta-target { margin-bottom: 0.4rem; }
+  .meta-target { line-height: 1.25; margin-bottom: 0.25rem; }
   .countdown { min-height: 0; margin-bottom: 0; }
-  .unit { padding-block: clamp(0.35rem, 2vh, 0.75rem); }
+  .unit { padding-block: clamp(0.3rem, 1.7vh, 0.6rem); }
   .unit .number { font-size: clamp(1.3rem, min(7.5vw, 12vh), 3.6rem); }
+  .unit .label { line-height: 1.2; }
 
   .timer-actions {
     flex: 0 0 auto;
@@ -741,9 +768,7 @@ button.ghost:hover {
     border-color: rgba(255, 255, 255, 0.25);
   }
 
-  /* Keep the completed-session pile above the action row. */
-  .pomo-pile { max-width: clamp(78px, 30vw, 120px); right: 6px; bottom: calc(max(2rem, 28px) + 1.5rem); }
-  .pomo-t { font-size: clamp(0.8rem, 4vw, 1rem); }
+  .pomo-shelf { flex: 0 0 32px; margin-top: 0; }
 }
 
 /* ---- Custom titlebar (frameless Tauri window) ------------------------- */
@@ -825,6 +850,7 @@ body.no-titlebar .update-banner { top: 0; }
   .unit .label { font-size: 8px; letter-spacing: 1px; }
   input[type="date"], select, button, .preset-row button { font-size: 10px; }
   .pomodoro { font-size: 14px; }
+  .pomo-t { font-size: 16px; }
 }
 
 button:focus-visible, input:focus-visible, select:focus-visible {

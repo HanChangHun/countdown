@@ -71,6 +71,11 @@
     </div>
     </div>
 
+    <section class="pomo-shelf" id="pomoShelf" aria-label="Completed Pomodoros today" hidden>
+      <span class="pomo-summary">Today <span id="pomoCount">0</span></span>
+      <div class="pomo-pile" id="pomoPile"></div>
+    </section>
+
     <p class="credit">by <a href="https://github.com/HanChangHun" target="_blank" rel="noopener">HanChangHun</a></p>
   </div>
   </main>
@@ -81,9 +86,6 @@
     <label class="autostart" id="autostartRow" hidden><input type="checkbox" id="autostartToggle"> start with Windows</label>
     <button class="link-btn" id="checkUpdates" type="button">check for updates</button>
   </aside>
-
-  <!-- Daily Pomodoro pile: a quiet, semi-transparent stack of 🍅 in the corner. -->
-  <div class="pomo-pile" id="pomoPile" hidden></div>
 
   <div class="update-banner" id="updateBanner" hidden>
     <span id="updateMsg"></span>
