@@ -16,6 +16,7 @@ Ships two ways as **two separate front-ends** (they share the design but have di
 The `.timer-stage` centers the timer and controls together. In compact mode,
 only `.timer-display` shrinks/scrolls, keeping `.timer-actions` visible and close
 to the countdown. Never stretch the display to push controls to the bottom.
+The desktop window can shrink to 280 × 160. At heights up to 220px, keep the title on one scrollable line, retain the target and timer values, and keep the 28px action buttons and titlebar timer-list toggle reachable.
 The `.pomo-shelf` is a separate 28px footer at every window height. Keep it
 borderless and unlabeled, with faint tomatoes at the bottom right; render at
 most five plus a remainder. Reserve its space without overlaying the content.
