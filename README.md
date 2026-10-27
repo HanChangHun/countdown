@@ -55,6 +55,7 @@ A [Tauri 2](https://tauri.app) build (Rust shell + system WebView2) that gives t
 - **Compact "glance" mode** — shrink the height and the setup chrome drops away, keeping the title, target, countdown and ±5 min / Reset / 🍅 controls together. Long titles scroll within the timer area while the controls stay visible. Completed Pomodoros sit quietly at the window's bottom-right edge in their own reserved space.
 - **Remembers its size and position** — reopens where you left it; if that spot is no longer on a connected monitor it opens centered instead.
 - **Lives in the system tray** — closing the window (✕) hides it to the tray; timers keep running and time's-up notifications still fire. Left-click the tray icon, pick **Open** from its menu, or launch the app again to bring it back. **Quit** is in the tray menu.
+- **Quiet window switching** keeps the widget out of Alt+Tab while remaining available on the taskbar and in the system tray.
 - **Single instance** — launching it again just brings the open window back.
 - **Start with Windows** — a toggle in the tray menu and at the bottom of the timer sidebar (☰), off by default.
 - **Opens the credit link in your browser** (not inside the app window).
@@ -88,6 +89,11 @@ Outputs:
 ## 📝 License
 
 [MIT](LICENSE) © 2026 [HanChangHun](https://github.com/HanChangHun)
+
+## 0.2.5
+
+- Keep the desktop widget out of Alt+Tab while retaining its taskbar button.
+- Preserve tray restoration, window state and always-on-top behavior.
 
 ## 0.2.4
 

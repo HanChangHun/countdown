@@ -1,3 +1,6 @@
+#[cfg(windows)]
+mod alt_tab;
+
 use tauri::{
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
@@ -50,6 +53,15 @@ pub fn run() {
             // plugin applies the saved geometry while it is created, so showing
             // it afterwards avoids a flash at the centered default position.
             if let Some(main) = app.get_webview_window("main") {
+                #[cfg(windows)]
+                if let Err(error) = main
+                    .hwnd()
+                    .map_err(|error| error.to_string())
+                    .and_then(|hwnd| alt_tab::install(hwnd.0 as isize))
+                {
+                    // Keep the widget usable if shell integration is unavailable.
+                    eprintln!("Could not configure Alt+Tab exclusion: {error}");
+                }
                 main.show()?;
             }
 
