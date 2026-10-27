@@ -62,7 +62,6 @@ pub fn run() {
                     // Keep the widget usable if shell integration is unavailable.
                     eprintln!("Could not configure Alt+Tab exclusion: {error}");
                 }
-                main.show()?;
             }
 
             // ---- System tray ----
@@ -110,6 +109,10 @@ pub fn run() {
                 })
                 .build(app)?;
 
+            if let Some(main) = app.get_webview_window("main") {
+                main.show()?;
+            }
+
             std::thread::spawn(cleanup_stale_updater_temp_dirs);
             Ok(())
         })
@@ -121,6 +124,11 @@ pub fn run() {
                 let _ = window.app_handle().save_window_state(WINDOW_STATE);
                 let _ = window.hide();
                 api.prevent_close();
+            }
+            tauri::WindowEvent::Resized(_)
+                if window.label() == "main" && window.is_minimized().unwrap_or(false) =>
+            {
+                let _ = window.hide();
             }
             // Also persist whenever the window loses focus, so the last move or
             // resize survives without an explicit Quit.
@@ -167,8 +175,8 @@ fn set_autostart(app: &AppHandle, enable: bool) -> bool {
 /// Bring the window back: tray click, the tray's "Open", or a second launch.
 fn show_main(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
         let _ = window.unminimize();
+        let _ = window.show();
         let _ = window.set_focus();
     }
 }
