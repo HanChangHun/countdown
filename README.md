@@ -51,7 +51,7 @@ State also persists in `localStorage` across reloads.
 
 A [Tauri 2](https://tauri.app) build (Rust shell + system WebView2) that gives the same countdown its own window:
 
-- **Resizable** — drag it to any size; the layout scales (the four boxes stay on one row).
+- **Resizable** — shrink the desktop widget to 280 × 160; the layout scales and keeps the four timer boxes on one row.
 - **Compact "glance" mode** — shrink the height and the setup chrome drops away, keeping the title, target, countdown and ±5 min / Reset / 🍅 controls together. Long titles scroll within the timer area while the controls stay visible. Completed Pomodoros sit quietly at the window's bottom-right edge in their own reserved space.
 - **Remembers its size and position** — reopens where you left it; if that spot is no longer on a connected monitor it opens centered instead.
 - **Lives in the system tray** — closing the window (✕) hides it to the tray; timers keep running and time's-up notifications still fire. Left-click the tray icon, pick **Open** from its menu, or launch the app again to bring it back. **Quit** is in the tray menu.
@@ -89,6 +89,11 @@ Outputs:
 ## 📝 License
 
 [MIT](LICENSE) © 2026 [HanChangHun](https://github.com/HanChangHun)
+
+## 0.2.6
+
+- Resize the desktop widget down to 280 × 160 with timer values and controls visible.
+- Keep timer management reachable in compact windows and retain the 28px Pomodoro footer.
 
 ## 0.2.5
 

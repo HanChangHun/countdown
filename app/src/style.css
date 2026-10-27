@@ -729,6 +729,8 @@ button.ghost:hover {
     font-size: clamp(1.2rem, min(4vw, 9vh), 2.5rem);
     line-height: 1.15;
     margin-bottom: 0.1rem;
+    max-height: 2.4em;
+    overflow: auto;
   }
   .meta-target { line-height: 1.25; margin-bottom: 0.25rem; }
   .countdown { min-height: 0; margin-bottom: 0; }
@@ -855,4 +857,76 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 @media (max-width: 360px) {
   .preset-row button { padding-inline: 0.55rem; }
+}
+
+
+/* Keep timer management reachable without enlarging a compact widget. */
+@media (max-height: 440px) {
+  .titlebar .tb-title {
+    min-width: 0;
+    padding-right: 32px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #sidebarToggle {
+    display: flex;
+    z-index: 21;
+    top: calc((var(--titlebar-h) - 26px) / 2);
+    right: calc(3 * (40px + 0.55rem) + 0.3rem);
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .sidebar { display: flex; padding: 8px 10px; gap: 6px; }
+  .sidebar-head { flex-shrink: 0; }
+  .timer-list { min-height: 0; overflow: auto; }
+  .sidebar .autostart, #checkUpdates { flex-shrink: 0; }
+  #checkUpdates { display: block; }
+}
+
+/* A 160px widget still reserves the full 28px Pomodoro footer. */
+@media (max-height: 220px) {
+  :root { --titlebar-h: 32px; }
+  html, body { overflow: hidden; }
+  .titlebar { gap: 0.35rem; padding-left: 0.6rem; }
+  .titlebar .tb-mark { width: 13px; height: 13px; }
+  .titlebar .tb-title { font-size: 10px; letter-spacing: 1.3px; }
+  .win-btn { flex-basis: 30px; width: 30px; height: 26px; }
+  #sidebarToggle { right: calc(3 * (30px + 0.35rem) + 0.3rem); }
+  .container { padding: 1px 4px; gap: 2px; }
+  .timer-display { padding: 0; }
+  h1 {
+    font-size: 14px;
+    line-height: 1.1;
+    margin-bottom: 0;
+    max-height: 1.2em;
+    white-space: nowrap;
+    overflow: auto;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .meta-target {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 14px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .countdown { gap: 4px; }
+  .unit { padding-block: 2px; border-radius: 7px; }
+  .unit .number { font-size: 18px; }
+  .unit .label { font-size: 8px; line-height: 1.1; margin-top: 1px; }
+  .elapsed { gap: 2px; }
+  .elapsed .number { font-size: 18px; }
+  .elapsed .label { font-size: 8px; line-height: 1.1; }
+  .unset-prompt { font-size: 11px; line-height: 1.2; gap: 0; letter-spacing: 0.2px; }
+  .timer-actions { gap: 6px; }
+  .timer-actions button { height: 28px; padding-inline: 9px; font-size: 10px; }
+  .timer-actions .pomodoro { width: 28px; font-size: 14px; padding: 0; }
+  .sidebar-head, .sidebar .link-btn, .sidebar .autostart { font-size: 11px; }
+  #addTimer { height: 22px; width: 22px; }
 }
