@@ -44,7 +44,7 @@
       "endpoints": [
         "https://github.com/HanChangHun/countdown/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk5MkE5ODJFNTMwNTYzNkEKUldScVl3VlRMcGdxbVVsbGZIYTRIanN2UDdDNW9XdStXK0hJNXVkUmdNWmtWdGtFQVU0KzJhMGUK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJFOUQzQzg4M0ZEQjQ1NTQKUldSVVJkcy9pRHlkdnFLQVE3NHdSb2RBZ3dCeG5UNkhEV09vNnJ3YXl2OHZkMWJPUncvYkdVK3gK",
       "windows": {
         "installMode": "passive"
       }
